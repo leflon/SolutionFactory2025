@@ -1,0 +1,4 @@
+# The data is 730MB. Get it from the project instructions repository.
+data/raw
+data/db.sqlite
+node_modules
