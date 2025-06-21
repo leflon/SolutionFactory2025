@@ -4,21 +4,48 @@ import Database from 'better-sqlite3';
 
 const db = new Database('db.sqlite');
 
+//#region CLI 
+// Check which datasets to import
+const AVAILABLE_DATASETS = ['routes', 'trips', 'stop_times', 'stops', 'transfers'];
+let importDatasets = [];
+let excludeDatasets = [];
+
+const importArgIndex = process.argv.indexOf('--import');
+const excludeArgIndex = process.argv.indexOf('--exclude');
+
+if (importArgIndex !== -1 && process.argv.length > importArgIndex + 1)
+	importDatasets = process.argv[importArgIndex + 1].split(',').map(s => s.trim()).filter(Boolean);
+else if (excludeArgIndex !== -1 && process.argv.length > excludeArgIndex + 1)
+	excludeDatasets = process.argv[excludeArgIndex + 1].split(',').map(s => s.trim()).filter(Boolean);
+
+let datasetsToImport;
+if (importDatasets.length > 0) datasetsToImport = AVAILABLE_DATASETS.filter(ds => importDatasets.includes(ds));
+else if (excludeDatasets.length > 0) datasetsToImport = AVAILABLE_DATASETS.filter(ds => !excludeDatasets.includes(ds));
+else datasetsToImport = [...AVAILABLE_DATASETS];
+//#endregion
+
 //#region SCHEMAS
+console.log(`== Datasets to import: ${datasetsToImport.join(', ')} ==`);
+// Drop tables for selected datasets
+for (const dataset of datasetsToImport) {
+	const tableName = dataset.replace(/_(.)/g, (_, c) => c.toUpperCase()).replace(/^./, c => c.toUpperCase());
+	db.exec(`DROP TABLE IF EXISTS ${tableName}`);
+}
+
 console.log('== Creating Database Schemas... == ');
 db.exec(`CREATE TABLE IF NOT EXISTS Routes(route_id TEXT PRIMARY KEY, name TEXT, type TEXT, background_color TEXT, text_color TEXT)`);
-db.exec(`CREATE TABLE IF NOT EXISTS Trips(route_id TEXT, service_id TEXT, trip_id TEXT PRIMARY KEY, direction TEXT, wheelchair_accessible INTEGER, bikes_allowed INTEGER, FOREIGN KEY (route_id) REFERENCES Routes(route_id))`);
+db.exec(`CREATE TABLE IF NOT EXISTS Trips(route_id TEXT, service_id TEXT, trip_id TEXT PRIMARY KEY, direction TEXT, wheelchair_accessible INTEGER, bikes_allowed INTEGER)`);
 db.exec(`CREATE TABLE IF NOT EXISTS StopTimes(trip_id TEXT, departure_time TEXT, stop_id TEXT, stop_sequence INTEGER, PRIMARY KEY (trip_id, stop_id, stop_sequence))`);
-db.exec(`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, name TEXT, latitude REAL, longitude REAL, zone_id INTEGER, parent_station TEXT, wheelchair_accessible INTEGER, bikes_accessible INTEGER)`);
+db.exec(`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, name TEXT, latitude REAL, longitude REAL, zone_id INTEGER, parent_station TEXT, wheelchair_accessible INTEGER)`);
 db.exec(`CREATE TABLE IF NOT EXISTS Transfers(from_id TEXT, to_id TEXT, time INTEGER)`);
 //#endregion
 
 
 //#region Utility Functions
 async function saveFileToDatabase(filePath, callback) {
-	process.stderr.write(`Saving file: ${filePath}...\n`);
+	process.stderr.write(`Saving data from file: ${filePath}...\n`);
 	const startTime = Date.now();
-	// Assuming agency.txt is in the same directory as this script.
+
 	if (!fs.existsSync(filePath))
 		throw new Error(`File not found: ${filePath}`);
 
@@ -29,9 +56,9 @@ async function saveFileToDatabase(filePath, callback) {
 	});
 	const iterator = rl[Symbol.asyncIterator]();
 
-	// Skip the first line (header)
 	let i = 0;
 	for await (const line of iterator) {
+		// Skip the first line (header)
 		if (i++ === 0) continue;
 		const parsedLine = line.split(',');
 		callback(parsedLine);
@@ -46,50 +73,97 @@ console.log('== Importing & Saving data... ==');
 
 const metroRouteIds = new Set();
 const metroTripIds = new Set();
+const metroStopIds = new Set();
 /* Routes */
-await saveFileToDatabase('raw/routes.txt', (parsed) => {
-	const query = db.prepare(`INSERT INTO Routes VALUES (?, ?, ?, ?, ?)`);
-	if (parsed[5] !== '1')
-		return; // Skip non-metro routes
-	metroRouteIds.add(parsed[0]);
-	query.run(parsed[0], parsed[3], 'metro', parsed[7], parsed[8]);
-});
-
+if (datasetsToImport.includes('routes')) {
+	const insert = db.prepare(`INSERT INTO Routes VALUES (?, ?, ?, ?, ?)`);
+	db.exec('BEGIN');
+	try {
+		await saveFileToDatabase('raw/routes.txt', (parsed) => {
+			if (parsed[5] !== '1') return; // Skip non-metro routes
+			metroRouteIds.add(parsed[0]);
+			insert.run(parsed[0], parsed[3], 'metro', parsed[7], parsed[8]);
+		});
+		db.exec('COMMIT');
+	} catch (e) { db.exec('ROLLBACK'); throw e; }
+} else {
+	console.log('Fetching metro route IDs from database...');
+	// We don't import routes, but we need to fetch the route IDs to filter trips
+	const query = db.prepare(`SELECT route_id FROM Routes`);
+	const rows = query.all();
+	for (const row of rows)
+		metroRouteIds.add(row.route_id);
+	console.log(`Found ${metroRouteIds.size} metro route IDs.`);
+}
 
 /* Trips */
-await saveFileToDatabase('raw/trips.txt', (parsed) => {
-	const query = db.prepare(`INSERT INTO Trips VALUES (?, ?, ?, ?, ?, ?)`);
-	if (!metroRouteIds.has(parsed[0]))
-		return; // Skip non-metro routes
-	metroTripIds.add(parsed[2]);
-	query.run(parsed[0], parsed[1], parsed[2], parsed[5], Number(parsed[7] === '1'), Number(parsed[8] === '1'));
-});
-process.exit(1);
-process.stdout.write('Importing Trips...');
-taskStartTime = Date.now();
-generator = readFileLines('raw/trips.txt');
-query = db.prepare(`INSERT INTO Trips VALUES (?, ?, ?, ?, ?, ?)`);
-let i = 0;
-for await (const line of generator) {
-	parsed = line.split(',');
-	if (!metroRouteIds.has(parsed[0]))
-		continue; // Skip non-metro routes
-	metroTripIds.add(parsed[2]);
-	query.run(parsed[0], parsed[1], parsed[2], parsed[5], Number(parsed[7] === '1'), Number(parsed[8] === '1'));
+if (datasetsToImport.includes('trips')) {
+	const insert = db.prepare(`INSERT INTO Trips VALUES (?, ?, ?, ?, ?, ?)`);
+	db.exec('BEGIN');
+	try {
+		await saveFileToDatabase('raw/trips.txt', (parsed) => {
+			if (!metroRouteIds.has(parsed[0])) return; // Skip non-metro routes
+			metroTripIds.add(parsed[2]);
+			insert.run(parsed[0], parsed[1], parsed[2], parsed[5], Number(parsed[7] === '1'), Number(parsed[8] === '1'));
+		});
+		db.exec('COMMIT');
+	} catch (e) { db.exec('ROLLBACK'); throw e; }
+} else {
+	console.log('Fetching metro trip IDs from database...');
+	// We don't import trips, but we need to fetch the trip IDs to filter stop times
+	const query = db.prepare(`SELECT trip_id FROM Trips`);
+	const rows = query.all();
+	for (const row of rows)
+		metroTripIds.add(row.trip_id);
+	console.log(`Found ${metroTripIds.size} metro trip IDs.`);
 }
-process.stdout.write(`(${Date.now() - taskStartTime}ms)\n`);
 
 /* StopTimes */
-process.stdout.write('Importing StopTimes, takes a few minutes...');
-taskStartTime = Date.now();
-generator = readFileLines('raw/stop_times.txt');
-query = db.prepare(`INSERT INTO StopTimes VALUES (?, ?, ?, ?)`);
-for await (const line of generator) {
-	parsed = line.split(',');
-	if (!metroTripIds.has(parsed[0]))
-		continue; // Skip non-metro trips
-	query.run(parsed[0], parsed[2], parsed[3], Number(parsed[4]));
+if (datasetsToImport.includes('stop_times')) {
+	const insert = db.prepare(`INSERT INTO StopTimes VALUES (?, ?, ?, ?)`);
+	db.exec('BEGIN');
+	try {
+		await saveFileToDatabase('raw/stop_times.txt', (parsed) => {
+			if (!metroTripIds.has(parsed[0])) return; // Skip non-metro trips
+			metroStopIds.add(parsed[3]);
+			insert.run(parsed[0], parsed[2], parsed[3], Number(parsed[4]));
+		});
+		db.exec('COMMIT');
+	} catch (e) { db.exec('ROLLBACK'); throw e; }
+} else {
+	console.log('Fetching metro stop IDs from database...');
+	// We don't import stop times, but we need to fetch the stop IDs to filter stops and transfers
+	const query = db.prepare(`SELECT stop_id FROM StopTimes`);
+	const rows = query.all();
+	for (const row of rows)
+		metroStopIds.add(row.stop_id);
+	console.log(`Found ${metroStopIds.size} metro stop IDs.`);
 }
-process.stdout.write(`(${Date.now() - taskStartTime}ms)\n`);
+
+/* Stops */
+if (datasetsToImport.includes('stops')) {
+	const insert = db.prepare(`INSERT INTO Stops VALUES (?, ?, ?, ?, ?, ?, ?)`);
+	db.exec('BEGIN');
+	try {
+		await saveFileToDatabase('raw/stops.txt', (parsed) => {
+			if (!metroStopIds.has(parsed[0])) return; // Skip non-metro stops
+			insert.run(parsed[0], parsed[2], parseFloat(parsed[4]), parseFloat(parsed[5]), parseInt(parsed[6]), parsed[9] || null, Number(parsed[10] === '1'));
+		});
+		db.exec('COMMIT');
+	} catch (e) { db.exec('ROLLBACK'); throw e; }
+}
+
+/* Transfers */
+if (datasetsToImport.includes('transfers')) {
+	const insert = db.prepare(`INSERT INTO Transfers VALUES (?, ?, ?)`);
+	db.exec('BEGIN');
+	try {
+		await saveFileToDatabase('raw/transfers.txt', (parsed) => {
+			if (!metroStopIds.has(parsed[0]) || !metroStopIds.has(parsed[1])) return; // Skip non-metro transfers
+			insert.run(parsed[0], parsed[1], parseInt(parsed[3]));
+		});
+		db.exec('COMMIT');
+	} catch (e) { db.exec('ROLLBACK'); throw e; }
+}
 
 //#endregion
