@@ -4,7 +4,7 @@ import Database from 'better-sqlite3';
 
 const db = new Database('db.sqlite');
 
-//#region CLI 
+//#region CLI
 // Check which datasets to import
 const AVAILABLE_DATASETS = ['routes', 'trips', 'stop_times', 'stops', 'transfers'];
 let importDatasets = [];
@@ -44,7 +44,8 @@ db.exec(`CREATE TABLE IF NOT EXISTS Transfers(from_id TEXT, to_id TEXT, time INT
 
 //#region Utility Functions
 /**
- * 
+ * Reads a CSV file line by line and applies a callback function to each parsed line.
+ * This function is used to import data from the GTFS dataset into the SQLite database.
  * @param {string} filePath the file to import
  * @param {(parsed: string[]) => any} callback The actions to perform for each item in the dataset
  */
@@ -100,7 +101,7 @@ if (datasetsToImport.includes('routes')) {
 		db.exec('COMMIT');
 	} catch (e) {db.exec('ROLLBACK'); throw e;}
 } else {
-	// If we don't re-import routes from the dataset, we still need the IDs 
+	// If we don't re-import routes from the dataset, we still need the IDs
 	// of metro-only routes in order to perform the filtering of the next datasets.
 	console.log('Fetching metro route IDs from database...');
 	const query = db.prepare(`SELECT route_id FROM Routes`);
