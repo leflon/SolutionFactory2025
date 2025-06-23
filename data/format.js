@@ -13,6 +13,7 @@ let excludeDatasets = [];
 const importArgIndex = process.argv.indexOf('--import');
 const excludeArgIndex = process.argv.indexOf('--exclude');
 
+// --import flag has priority over --exclude
 if (importArgIndex !== -1 && process.argv.length > importArgIndex + 1)
 	importDatasets = process.argv[importArgIndex + 1].split(',').map(s => s.trim()).filter(Boolean);
 else if (excludeArgIndex !== -1 && process.argv.length > excludeArgIndex + 1)
@@ -28,6 +29,7 @@ else datasetsToImport = [...AVAILABLE_DATASETS];
 console.log(`== Datasets to import: ${datasetsToImport.join(', ')} ==`);
 // Drop tables for selected datasets
 for (const dataset of datasetsToImport) {
+	// For stop_times to become StopTimes
 	const tableName = dataset.replace(/_(.)/g, (_, c) => c.toUpperCase()).replace(/^./, c => c.toUpperCase());
 	db.exec(`DROP TABLE IF EXISTS ${tableName}`);
 }
@@ -40,15 +42,20 @@ db.exec(`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, name TEXT, l
 db.exec(`CREATE TABLE IF NOT EXISTS Transfers(from_id TEXT, to_id TEXT, time INTEGER)`);
 //#endregion
 
-
 //#region Utility Functions
+/**
+ * 
+ * @param {string} filePath the file to import
+ * @param {(parsed: string[]) => any} callback The actions to perform for each item in the dataset
+ */
 async function saveFileToDatabase(filePath, callback) {
-	process.stderr.write(`Saving data from file: ${filePath}...\n`);
+	console.log(`Saving data from file: ${filePath}...`);
 	const startTime = Date.now();
 
 	if (!fs.existsSync(filePath))
 		throw new Error(`File not found: ${filePath}`);
 
+	/* Using a ReadableStream avoids loading the whole file into memory */
 	const fileStream = fs.createReadStream(filePath);
 
 	const rl = readline.createInterface({
@@ -62,6 +69,7 @@ async function saveFileToDatabase(filePath, callback) {
 		if (i++ === 0) continue;
 		const parsedLine = line.split(',');
 		callback(parsedLine);
+		// Display how much has been treated. Blank spaces are added to avoid display issues
 		process.stdout.write(`\r${i}` + ' '.repeat(10));
 	}
 	process.stdout.write(`\r(${Date.now() - startTime}ms)${' '.repeat(10)}\n`);
@@ -71,12 +79,17 @@ async function saveFileToDatabase(filePath, callback) {
 //#region Import, Format  & Insert
 console.log('== Importing & Saving data... ==');
 
+/* These sets are used to avoid saving data that is not related to the Metro network into Database
+(we ignore RER, Transilien, etc.) */
 const metroRouteIds = new Set();
 const metroTripIds = new Set();
 const metroStopIds = new Set();
+
 /* Routes */
 if (datasetsToImport.includes('routes')) {
 	const insert = db.prepare(`INSERT INTO Routes VALUES (?, ?, ?, ?, ?)`);
+	// By default, each `db.run` call is ran into its own implicit transaction, which dramatically slows down the process.
+	// To avoid overhead, we open the transaction explicitely and include all queries for this dataset in it.
 	db.exec('BEGIN');
 	try {
 		await saveFileToDatabase('raw/routes.txt', (parsed) => {
@@ -85,10 +98,11 @@ if (datasetsToImport.includes('routes')) {
 			insert.run(parsed[0], parsed[3], 'metro', parsed[7], parsed[8]);
 		});
 		db.exec('COMMIT');
-	} catch (e) { db.exec('ROLLBACK'); throw e; }
+	} catch (e) {db.exec('ROLLBACK'); throw e;}
 } else {
+	// If we don't re-import routes from the dataset, we still need the IDs 
+	// of metro-only routes in order to perform the filtering of the next datasets.
 	console.log('Fetching metro route IDs from database...');
-	// We don't import routes, but we need to fetch the route IDs to filter trips
 	const query = db.prepare(`SELECT route_id FROM Routes`);
 	const rows = query.all();
 	for (const row of rows)
@@ -107,7 +121,7 @@ if (datasetsToImport.includes('trips')) {
 			insert.run(parsed[0], parsed[1], parsed[2], parsed[5], Number(parsed[7] === '1'), Number(parsed[8] === '1'));
 		});
 		db.exec('COMMIT');
-	} catch (e) { db.exec('ROLLBACK'); throw e; }
+	} catch (e) {db.exec('ROLLBACK'); throw e;}
 } else {
 	console.log('Fetching metro trip IDs from database...');
 	// We don't import trips, but we need to fetch the trip IDs to filter stop times
@@ -129,7 +143,7 @@ if (datasetsToImport.includes('stop_times')) {
 			insert.run(parsed[0], parsed[2], parsed[3], Number(parsed[4]));
 		});
 		db.exec('COMMIT');
-	} catch (e) { db.exec('ROLLBACK'); throw e; }
+	} catch (e) {db.exec('ROLLBACK'); throw e;}
 } else {
 	console.log('Fetching metro stop IDs from database...');
 	// We don't import stop times, but we need to fetch the stop IDs to filter stops and transfers
@@ -150,7 +164,7 @@ if (datasetsToImport.includes('stops')) {
 			insert.run(parsed[0], parsed[2], parseFloat(parsed[4]), parseFloat(parsed[5]), parseInt(parsed[6]), parsed[9] || null, Number(parsed[10] === '1'));
 		});
 		db.exec('COMMIT');
-	} catch (e) { db.exec('ROLLBACK'); throw e; }
+	} catch (e) {db.exec('ROLLBACK'); throw e;}
 }
 
 /* Transfers */
@@ -163,7 +177,7 @@ if (datasetsToImport.includes('transfers')) {
 			insert.run(parsed[0], parsed[1], parseInt(parsed[3]));
 		});
 		db.exec('COMMIT');
-	} catch (e) { db.exec('ROLLBACK'); throw e; }
+	} catch (e) {db.exec('ROLLBACK'); throw e;}
 }
 
 //#endregion
