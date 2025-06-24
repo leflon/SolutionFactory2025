@@ -13,25 +13,37 @@ export async function GET(req: NextRequest) {
   // GROUP_CONCAT(stop_id) as stop_ids, 
   const stmt = db.prepare(`
     SELECT 
-      name, 
-      MAX(wheelchair_accessible) as wheelchair_accessible
-    FROM Stops
-    WHERE LOWER(name) LIKE ?
-    GROUP BY name
-    ORDER BY name
-    LIMIT 10
+        s.name AS stop_name,
+        GROUP_CONCAT(DISTINCT r.name) AS route_names,
+        GROUP_CONCAT(DISTINCT r.route_id) AS route_ids,
+        GROUP_CONCAT(DISTINCT r.background_color) AS background_colors,
+        GROUP_CONCAT(DISTINCT r.text_color) AS text_colors
+    FROM Stops s
+    JOIN StopTimes st ON s.stop_id = st.stop_id
+    JOIN Trips t ON st.trip_id = t.trip_id
+    JOIN Routes r ON t.route_id = r.route_id
+    WHERE LOWER(s.name) LIKE ?
+    GROUP BY s.name;
   `);
 
-  const rows = stmt.all(`${q}%`);
+  type Row = {
+    stop_name: string;
+    route_names: string;
+    route_ids: string;
+    background_colors: string;
+    text_colors: string;
+  };
+  // Use %q% instead of q% to match anywhere in the stop name
+  const rows = stmt.all(`%${q}%`) as Row[];
 
-  // Formating the result 
-  const stations = rows.map(row => {
-    const r = row as { name: string; wheelchair_accessible: number };
-    return {
-      name: r.name,
-      wheelchair_accessible: !!r.wheelchair_accessible
-    };
-  });
+  // Formatting the result
+  const stations = rows.map(row => ({
+    stop_name: row.stop_name,
+    route_names: row.route_names ? row.route_names.split(',') : [],
+    route_ids: row.route_ids ? row.route_ids.split(',') : [],
+    background_colors: row.background_colors ? row.background_colors.split(',') : [],
+    text_colors: row.text_colors ? row.text_colors.split(',') : [],
+  }));
 
   return Response.json({ stations });
 }

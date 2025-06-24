@@ -2,12 +2,14 @@ const translations = {
   en: {
     departure: "Departure",
     arrival: "Arrival",
-    calculate: "Calculate"
+    calculate: "Calculate",
+    loading: "Loading..."
   },
   fr: {
     departure: "Départ",
     arrival: "Arrivée",
-    calculate: "Calculer"
+    calculate: "Calculer",
+    loading: "Chargement..."
   }
 };
 
