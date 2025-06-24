@@ -1,7 +1,6 @@
-body {
-	background: #eee;
-}
-
 h1 {
 	text-align: center;
 }
+
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
