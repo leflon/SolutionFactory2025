@@ -1,6 +1,11 @@
-h1 {
-	text-align: center;
-}
-
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
+
+@variant dark (&:where(.dark, .dark *));
+
+.line-indicator {
+	@apply absolute h-11/12 left-0 top-1 w-[6px];
+}
+.has-station-indicator {
+	@apply relative before:absolute before:size-[14px] before:left-[-20px] before:top-[1px]
+	before:rounded-full before:bg-white before:border-2;
+}
