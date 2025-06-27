@@ -1,8 +1,8 @@
 "use client";
-import { getSegmentDurationInMinutes, Itinerary, ItinerarySegment } from '@/lib/Itinerary'
-import { MdDirectionsWalk, MdKeyboardArrowDown, MdKeyboardArrowRight } from "react-icons/md";
+import { getSegmentDurationInMinutes, getTotalDistance, getTotalDuration, getTotalStops, getTotalWalkingDuration, Itinerary, ItinerarySegment } from '@/lib/Itinerary'
+import { MdDirectionsWalk, MdKeyboardArrowDown, MdKeyboardArrowRight, MdSchedule, MdLocationPin } from "react-icons/md";
 import Image from 'next/image';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 type ItineraryBreakdownPartProps = {
 	segment: ItinerarySegment;
 };
@@ -62,23 +62,42 @@ type ItineraryBreakdownProps = {
 }
 const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 	return (
-		<div className='fixed bottom-10 left-5 h-1/2 w-60 bg-white dark:bg-gray-700 shadow-lg rounded-lg p-4 overflow-y-auto z-50 dark:text-white'>
-			<div className='sticky top-0 z-50 flex flex-row items-center gap-2 mb-5 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg justify-center'>
+		<div className='fixed bottom-10 left-5 h-1/2 w-60 bg-white dark:bg-gray-700 shadow-lg rounded-lg p-4 overflow-y-auto z-50 dark:text-white border-[1px] border-gray-300 dark:border-gray-600'>
+			<div
+				className={
+					'flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg'
+					+ (itinerary.segments.length > 2 ? ' overflow-x-auto justify-start' : ' justify-center')
+				}
+			>
 				{itinerary.segments.map((segment, i) =>
-				<>
+				<Fragment key={segment.line}>
 					{segment.connectingDuration &&
 						<>
 						<div className='text-xs flex flex-row items-center'>
 							<MdDirectionsWalk size={18} />
-							{Math.ceil(segment.connectingDuration / 60)} min
+							{itinerary.segments.length < 3 ? `${Math.ceil(segment.connectingDuration / 60)}min` : ''}
 						</div>
 						<MdKeyboardArrowRight size={18} />
 						</>
 					}
 					<Image src={`/metros/${segment.line}.png`} alt={segment.line} width={18} height={18} />
 					{i !== itinerary.segments.length - 1 && <MdKeyboardArrowRight size={18} />}
-				</>
+				</Fragment>
 				)}
+			</div>
+			<div className='flex flex-row gap-2 mb-4 justify-center *:flex *:flex-row *:items-center *:text-xs *:gap-1'>
+				<div>
+					<MdSchedule size={18} />
+					{Math.ceil(getTotalDuration(itinerary) / 60)} min
+				</div>
+				<div>
+					<MdDirectionsWalk size={18} />
+					{Math.ceil(getTotalWalkingDuration(itinerary) / 60)} min
+				</div>
+				<div>
+					<MdLocationPin size={18} />
+					{getTotalStops(itinerary)} arrêts
+				</div>
 			</div>
 			{itinerary.segments.map((segment, i) =>
 			<div key={segment.line}>

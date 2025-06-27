@@ -39,7 +39,7 @@ export function getSegmentDurationInMinutes(segment: ItinerarySegment): number {
 }
 
 export function getTotalDuration(itinerary: Itinerary): number {
-	return itinerary.segments.reduce((acc, segment) => acc + segment.stops.reduce((acc, stop) => acc + stop.duration, 0), 0);
+	return itinerary.segments.reduce((acc, segment) => acc + segment.stops.reduce((acc, stop) => acc + stop.duration, 0) + (segment.connectingDuration ?? 0), 0);
 }
 
 export function getTotalDistance(itinerary: Itinerary): number {
