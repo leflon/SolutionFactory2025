@@ -1,6 +1,5 @@
 "use client";
 
-//import Example from '@/components/Example';
 import Fields from '@/components/Fields';
 import Navbar from '@/components/Navbar';
 import { useState } from 'react';
