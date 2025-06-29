@@ -4,5 +4,13 @@
 		"departure": "Point de départ",
 		"destination": "Destination",
 		"go": "Aller"
+	},
+	"ItineraryBreakdown": {
+		"duration": "{{duration}} min",
+		"direction": "Direction <b>{{direction}}</b>",
+		"stops": {
+			"one": "{{count}} arrêt",
+			"other": "{{count}} arrêts"
+		}
 	}
 }
