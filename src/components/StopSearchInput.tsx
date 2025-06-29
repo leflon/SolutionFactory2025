@@ -38,6 +38,7 @@ const StopSearchInput = ({
 	const onStopSelect = (stop: Stop) => {
 		setQuery(stop.stop_name);
 		setShowDropdown(false);
+		setSuggestedStops([]); // This improves sequential focus navigation
 		onSelect(stop.stop_id);
 	};
 
@@ -77,8 +78,8 @@ const StopSearchInput = ({
 						e.target.select();
 						setShowDropdown(true);
 					}}
+					onBlur={() => setShowDropdown(false)}
 					/* Without this timeout, the child items click event don't fire */
-					onBlur={() => setTimeout(() => setShowDropdown(false), 400)}
 					autoComplete='off'
 					placeholder={placeholder}
 				/>
@@ -91,17 +92,30 @@ const StopSearchInput = ({
 					hidden={!isLoading}
 				></div>
 			</div>
-			{suggestedStops.length > 0 && showDropdown && (
+			{true && (
 				<div
-					className='absolute top-full left-0 mt-1 border border-gray-300
+					className={
+						`absolute top-full left-0 mt-1 border border-gray-300
 					rounded dark:bg-gray-700 dark:text-white bg-white
-					shadow-md max-h-60 overflow-y-auto w-xs z-10'
+					shadow-md max-h-60 overflow-y-auto w-xs z-10` +
+						/* Using this rather than conditional rendering makes
+					 		displaying/hiding the dropdown more flexible. */
+						(suggestedStops.length > 0 && showDropdown
+							? ' opacity-100 pointer-events-auto'
+							: ' opacity-0 pointer-events-none')
+					}
+					tabIndex={-1}
 				>
 					{suggestedStops.map((stop) => (
-						<div
+						<button
 							key={stop.stop_id}
-							onClick={() => onStopSelect(stop)}
-							className='flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer'
+							onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								onStopSelect(stop);
+								(e.target as HTMLButtonElement).blur();
+							}}
+							onFocus={() => setShowDropdown(true)}
+							onBlur={() => setShowDropdown(false)}
+							className='w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer'
 						>
 							<div className='flex gap-1 mr-2 flex-shrink-0'>
 								{stop.route_names.map((name, idx) => (
@@ -117,7 +131,7 @@ const StopSearchInput = ({
 							<span className='whitespace-normal break-words'>
 								{stop.stop_name}
 							</span>
-						</div>
+						</button>
 					))}
 				</div>
 			)}
