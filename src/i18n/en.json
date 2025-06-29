@@ -1,0 +1,8 @@
+{
+	"ItinerarySelector": {
+		"title": "Your itinerary",
+		"departure": "Departure",
+		"destination": "Destination",
+		"go": "Go"
+	}
+}

@@ -1,6 +1,7 @@
 import { ItineraryEndpoints } from '@/lib/types';
 import { useState } from 'react';
 import StopSearchInput from './StopSearchInput';
+import { t } from '@/lib/i18n';
 
 type ItinerarySelectorProps = {
 	onRequest: (endpoints: ItineraryEndpoints) => any;
@@ -16,13 +17,15 @@ const ItinerarySelector = ({ onRequest }: ItinerarySelectorProps) => {
 			className='absolute flex flex-col items-center justify-center gap-2
 		border border-gray-300 dark:border-gray-600 rounded-sm size-60 left-5 shadow-md dark:shadow-lg'
 		>
-			<div className='text-xl font-bold dark:text-white'>Votre itinéraire</div>
+			<div className='text-xl font-bold dark:text-white'>
+				{t('ItinerarySelector.title')}
+			</div>
 			<StopSearchInput
-				placeholder='Point de départ'
+				placeholder={t('ItinerarySelector.departure')}
 				onSelect={(stopId) => setEndpoints({ ...endpoints, departure: stopId })}
 			/>
 			<StopSearchInput
-				placeholder='Destination'
+				placeholder={t('ItinerarySelector.destination')}
 				onSelect={(stopId) =>
 					setEndpoints({ ...endpoints, destination: stopId })
 				}
@@ -35,7 +38,7 @@ const ItinerarySelector = ({ onRequest }: ItinerarySelectorProps) => {
 				hover:scale-105 hover:bg-green-600 hover:text-white hover:dark:bg-pink-400
 				hover:dark:text-white'
 			>
-				Aller
+				{t('ItinerarySelector.go')}
 			</button>
 		</div>
 	);

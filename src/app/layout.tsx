@@ -1,3 +1,4 @@
+import { LanguageProvider } from '@/components/LanguageProvider';
 import '@/styles/main.css';
 import type { Metadata } from 'next';
 
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang='fr' className='bg-gray-150 dark:bg-gray-800'>
-			<body>{children}</body>
+			<body>
+				<LanguageProvider>{children}</LanguageProvider>
+			</body>
 		</html>
 	);
 }
