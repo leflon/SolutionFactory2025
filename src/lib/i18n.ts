@@ -1,7 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { useLanguage } from '@/components/LanguageProvider';
 import en from '../i18n/en.json';
 import fr from '../i18n/fr.json';
-import { useLanguage } from '@/components/LanguageProvider';
 
 export type Language = 'en' | 'fr';
 export const LanguageLabels: Record<Language, string> = {
@@ -59,11 +58,12 @@ const locales: Record<Language, LocaleRecord> = {
  * t("cart.items", { count: -2 });  // "You have -2 items"
  */
 export function t(key: string, params?: Record<string, string | number>) {
-	// Get the requested entry, considering nested entries
-	const keySplit = key.split('.');
 	const { lang } = useLanguage();
 	const locale = locales[lang];
 	let current: LocaleEntry = locale;
+
+	// Get the requested entry, considering nested entries
+	const keySplit = key.split('.');
 	for (const part of keySplit) {
 		console.log(current, part);
 		// Cannot iterate over a string, so nesting stops here
@@ -94,7 +94,7 @@ export function t(key: string, params?: Record<string, string | number>) {
 		if (params && key in params) {
 			return '' + params[key]; // Convert to string
 		}
-		return match;
+		return match; // If no param is found, keep the string as is.
 	});
 
 	return current;
