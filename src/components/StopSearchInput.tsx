@@ -82,7 +82,10 @@ const StopSearchInput = ({
 					autoComplete='off'
 					placeholder={placeholder}
 				/>
-				<div className='absolute right-2 w-4 h-4 px-2 bg-white dark:bg-gray-800 '></div>
+				<div
+					className='absolute right-2 w-4 h-4 px-2 bg-white dark:bg-gray-800'
+					hidden={!isLoading}
+				></div>
 				<div
 					className='absolute right-2 w-4 h-4 rounded-full border-2 border-black dark:border-white dark:border-t-transparent border-t-transparent animate-spin'
 					hidden={!isLoading}
