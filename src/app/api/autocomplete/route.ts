@@ -1,16 +1,19 @@
 import db from '@/lib/db';
+import { normalizeString } from '@/lib/utils';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
-	const q = searchParams.get('q')?.toLowerCase() || '';
+	let q = searchParams.get('q')?.toLowerCase() || '';
 
 	if (!q) {
 		return Response.json(
 			{ error: 'Missing query parameter "q"' },
-			{ status: 400 },
+			{ status: 400 }
 		);
 	}
+
+	q = normalizeString(q); // Removes all special characters and accents
 
 	// Grab the stations from the database
 	// GROUP_CONCAT(stop_id) as stop_ids,
@@ -23,7 +26,7 @@ export async function GET(req: NextRequest) {
     JOIN StopTimes st ON s.stop_id = st.stop_id
     JOIN Trips t ON st.trip_id = t.trip_id
     JOIN Routes r ON t.route_id = r.route_id
-    WHERE LOWER(s.name) LIKE ?
+    WHERE s.plain_name LIKE ?
     GROUP BY s.name;
   `);
 
@@ -39,7 +42,7 @@ export async function GET(req: NextRequest) {
 	const stops = rows.map((row) => ({
 		stop_id: row.stop_id,
 		stop_name: row.stop_name,
-		route_names: row.route_names ? row.route_names.split(',') : [],
+		route_names: row.route_names ? row.route_names.split(',') : []
 	}));
 
 	return Response.json({ stops });
