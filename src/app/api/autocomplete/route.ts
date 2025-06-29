@@ -1,9 +1,9 @@
-import db from "@/lib/db";
-import { NextRequest } from "next/server";
+import db from '@/lib/db';
+import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
-	const q = searchParams.get("q")?.toLowerCase() || "";
+	const q = searchParams.get('q')?.toLowerCase() || '';
 
 	if (!q) {
 		return Response.json(
@@ -36,11 +36,11 @@ export async function GET(req: NextRequest) {
 	const rows = stmt.all(`%${q}%`) as Row[];
 
 	// Formatting the result
-	const stations = rows.map((row) => ({
+	const stops = rows.map((row) => ({
 		stop_id: row.stop_id,
 		stop_name: row.stop_name,
-		route_names: row.route_names ? row.route_names.split(",") : [],
+		route_names: row.route_names ? row.route_names.split(',') : [],
 	}));
 
-	return Response.json({ stations });
+	return Response.json({ stops });
 }
