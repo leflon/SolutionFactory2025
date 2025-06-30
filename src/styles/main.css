@@ -1,6 +1,81 @@
-h1 {
-	text-align: center;
+@import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+	font-family: 'Parisine';
+	src: url('/fonts/parisine.otf') format('opentype');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
 }
 
-@import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
+@font-face {
+	font-family: 'Parisine';
+	src: url('/fonts/parisine_bold.otf') format('opentype');
+	font-weight: bold;
+	font-style: normal;
+	font-display: swap;
+}
+
+@theme {
+	--font-main: 'Parisine', sans-serif;
+}
+
+body {
+	@apply font-main;
+}
+
+.line-indicator {
+	@apply absolute h-[95%] left-0 top-1 w-[6px];
+}
+
+/*#region ItineraryBreakdown */
+.has-stop-indicator {
+	@apply relative before:absolute before:size-[14px] before:left-[-20px] before:top-[1px] before:rounded-full before:bg-white before:border-2 dark:before:border-black;
+
+	&.small-indicator {
+		@apply before:size-[12px] before:left-[-19px] before:top-[2px];
+
+		&:before {
+			border-color: var(--border-color);
+			opacity: 1;
+			/* Delay is added to account for the parent container overflow delay */
+			transition: opacity 0.3s ease-in-out 0.05s;
+		}
+
+		&[data-displayed='false'] {
+			@apply before:opacity-0;
+		}
+	}
+}
+
+/* Transitions don't work for overflow, so we use keyframes instead.
+ * Since the station-indicators are hidden by the hidden overflow, we must de-hide the overflow when the container is open.
+ * If the overflow is instantly visible, the dropdown-like effect is lost. */
+@keyframes overflow-in {
+	from {
+		overflow: hidden;
+	}
+}
+
+@keyframes overflow-out {
+	from {
+		overflow: visible;
+	}
+}
+
+.middle-stops-container {
+	@apply h-0 transition-all duration-300;
+	/* Overflow becomes hidden only after .3s, leaving time to stop indicators to fade out. */
+	animation: overflow-out 0.3s linear forwards;
+	overflow: hidden;
+
+	&.open {
+		animation: overflow-in 0.3s linear forwards;
+		/* This is just like height auto, but allows animations */
+		height: calc-size(auto, size);
+		overflow: visible;
+	}
+}
+
+/*#endregion*/

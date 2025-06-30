@@ -1,16 +1,24 @@
-"use client";
+'use client';
 
-//import Example from '@/components/Example';
-import Fields from '@/components/Fields';
+import ItineraryBreakdown from '@/components/ItineraryBreakdown';
+import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
+import { t } from '@/lib/i18n';
+import { PLACEHOLDER_ITINERARY } from '@/lib/Itinerary';
+import { ItineraryEndpoints } from '@/lib/types';
 import { useState } from 'react';
-import type { LanguageCode } from '@/components/Navbar';
+
 export default function Home() {
-	const [language, setLanguage] = useState<LanguageCode>("fr");
+	const handleItineraryRequest = (endpoints: ItineraryEndpoints) => {
+		console.log('Request: ', endpoints);
+		// TODO: Implement
+	};
+
 	return (
 		<div>
-			<Navbar language={language} setLanguage={setLanguage} />
-			<Fields language={language}/>
+			<Navbar />
+			<ItinerarySelector onRequest={handleItineraryRequest} />
+			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
 		</div>
 	);
 }

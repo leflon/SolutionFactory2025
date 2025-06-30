@@ -1,16 +1,14 @@
 const translations = {
-  en: {
-    departure: "Departure",
-    arrival: "Arrival",
-    calculate: "Calculate",
-    loading: "Loading..."
-  },
-  fr: {
-    departure: "Départ",
-    arrival: "Arrivée",
-    calculate: "Calculer",
-    loading: "Chargement..."
-  }
+	en: {
+		departure: 'Departure',
+		destination: 'Destination',
+		go: 'Go',
+	},
+	fr: {
+		departure: 'Point de départ',
+		arrival: 'Arrivée',
+		go: 'Aller',
+	},
 };
 
 export default translations;

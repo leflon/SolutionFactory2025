@@ -1,0 +1,16 @@
+{
+	"ItinerarySelector": {
+		"title": "Your itinerary",
+		"departure": "Departure",
+		"destination": "Destination",
+		"go": "Go"
+	},
+	"ItineraryBreakdown": {
+		"duration": "{{duration}} min",
+		"direction": "Towards <b>{{direction}}</b>",
+		"stops": {
+			"one": "{{count}} stop",
+			"other": "{{count}} stops"
+		}
+	}
+}
