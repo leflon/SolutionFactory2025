@@ -11,7 +11,7 @@ const AVAILABLE_DATASETS = [
 	'trips',
 	'stop_times',
 	'stops',
-	'transfers'
+	'transfers',
 ];
 let importDatasets = [];
 let excludeDatasets = [];
@@ -34,11 +34,11 @@ else if (excludeArgIndex !== -1 && process.argv.length > excludeArgIndex + 1)
 let datasetsToImport;
 if (importDatasets.length > 0)
 	datasetsToImport = AVAILABLE_DATASETS.filter((ds) =>
-		importDatasets.includes(ds)
+		importDatasets.includes(ds),
 	);
 else if (excludeDatasets.length > 0)
 	datasetsToImport = AVAILABLE_DATASETS.filter(
-		(ds) => !excludeDatasets.includes(ds)
+		(ds) => !excludeDatasets.includes(ds),
 	);
 else datasetsToImport = [...AVAILABLE_DATASETS];
 //#endregion
@@ -56,19 +56,19 @@ for (const dataset of datasetsToImport) {
 
 console.log('== Creating Database Schemas... == ');
 db.exec(
-	`CREATE TABLE IF NOT EXISTS Routes(route_id TEXT PRIMARY KEY, name TEXT, type TEXT, background_color TEXT, text_color TEXT)`
+	`CREATE TABLE IF NOT EXISTS Routes(route_id TEXT PRIMARY KEY, name TEXT, type TEXT, background_color TEXT, text_color TEXT)`,
 );
 db.exec(
-	`CREATE TABLE IF NOT EXISTS Trips(route_id TEXT, service_id TEXT, trip_id TEXT PRIMARY KEY, direction TEXT, wheelchair_accessible INTEGER, bikes_allowed INTEGER)`
+	`CREATE TABLE IF NOT EXISTS Trips(route_id TEXT, service_id TEXT, trip_id TEXT PRIMARY KEY, direction TEXT, wheelchair_accessible INTEGER, bikes_allowed INTEGER)`,
 );
 db.exec(
-	`CREATE TABLE IF NOT EXISTS StopTimes(trip_id TEXT, departure_time TEXT, stop_id TEXT, stop_sequence INTEGER, PRIMARY KEY (trip_id, stop_id, stop_sequence))`
+	`CREATE TABLE IF NOT EXISTS StopTimes(trip_id TEXT, departure_time TEXT, stop_id TEXT, stop_sequence INTEGER, PRIMARY KEY (trip_id, stop_id, stop_sequence))`,
 );
 db.exec(
-	`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, name TEXT, plain_name TEXT, latitude REAL, longitude REAL, zone_id INTEGER, parent_station TEXT, wheelchair_accessible INTEGER)`
+	`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, name TEXT, plain_name TEXT, latitude REAL, longitude REAL, zone_id INTEGER, parent_station TEXT, wheelchair_accessible INTEGER)`,
 );
 db.exec(
-	`CREATE TABLE IF NOT EXISTS Transfers(from_id TEXT, to_id TEXT, time INTEGER)`
+	`CREATE TABLE IF NOT EXISTS Transfers(from_id TEXT, to_id TEXT, time INTEGER)`,
 );
 //#endregion
 
@@ -103,7 +103,7 @@ async function saveFileToDatabase(filePath, callback) {
 	const fileStream = fs.createReadStream(filePath);
 
 	const rl = readline.createInterface({
-		input: fileStream
+		input: fileStream,
 	});
 	const iterator = rl[Symbol.asyncIterator]();
 
@@ -170,7 +170,7 @@ if (datasetsToImport.includes('trips')) {
 				parsed[2],
 				parsed[5],
 				Number(parsed[7] === '1'),
-				Number(parsed[8] === '1')
+				Number(parsed[8] === '1'),
 			);
 		});
 		db.exec('COMMIT');
@@ -214,7 +214,7 @@ if (datasetsToImport.includes('stop_times')) {
 /* Stops */
 if (datasetsToImport.includes('stops')) {
 	const insert = db.prepare(
-		`INSERT INTO Stops VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+		`INSERT INTO Stops VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 	);
 	db.exec('BEGIN');
 	try {
@@ -228,7 +228,7 @@ if (datasetsToImport.includes('stops')) {
 				parseFloat(parsed[5]),
 				parseInt(parsed[6]),
 				parsed[9] || null,
-				Number(parsed[10] === '1')
+				Number(parsed[10] === '1'),
 			);
 		});
 		db.exec('COMMIT');

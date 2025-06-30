@@ -4,6 +4,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
+		"db:format": "cd data && node format.js",
 		"dev": "next dev --turbopack",
 		"build": "next build",
 		"start": "next start",
