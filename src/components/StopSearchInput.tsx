@@ -92,49 +92,47 @@ const StopSearchInput = ({
 					hidden={!isLoading}
 				></div>
 			</div>
-			{true && (
-				<div
-					className={
-						`absolute top-full left-0 mt-1 border border-gray-300
+			<div
+				className={
+					`absolute top-full left-0 mt-1 border border-gray-300
 					rounded dark:bg-gray-700 dark:text-white bg-white
 					shadow-md max-h-60 overflow-y-auto w-xs z-10` +
-						/* Using this rather than conditional rendering makes
+					/* Using this rather than conditional rendering makes
 					 		displaying/hiding the dropdown more flexible. */
-						(suggestedStops.length > 0 && showDropdown
-							? ' opacity-100 pointer-events-auto'
-							: ' opacity-0 pointer-events-none')
-					}
-					tabIndex={-1}
-				>
-					{suggestedStops.map((stop) => (
-						<button
-							key={stop.stop_id}
-							onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-								onStopSelect(stop);
-								(e.target as HTMLButtonElement).blur();
-							}}
-							onFocus={() => setShowDropdown(true)}
-							onBlur={() => setShowDropdown(false)}
-							className='w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer'
-						>
-							<div className='flex gap-1 mr-2 flex-shrink-0'>
-								{stop.route_names.map((name, idx) => (
-									<Image
-										key={idx}
-										src={`/metros/${name}.png`}
-										alt={name}
-										width={24}
-										height={24}
-									/>
-								))}
-							</div>
-							<span className='whitespace-normal break-words'>
-								{stop.stop_name}
-							</span>
-						</button>
-					))}
-				</div>
-			)}
+					(suggestedStops.length > 0 && showDropdown
+						? ' opacity-100 pointer-events-auto'
+						: ' opacity-0 pointer-events-none')
+				}
+				tabIndex={-1}
+			>
+				{suggestedStops.map((stop) => (
+					<button
+						key={stop.stop_id}
+						onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+							onStopSelect(stop);
+							(e.target as HTMLButtonElement).blur();
+						}}
+						onFocus={() => setShowDropdown(true)}
+						onBlur={() => setShowDropdown(false)}
+						className='w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer'
+					>
+						<div className='flex gap-1 mr-2 flex-shrink-0'>
+							{stop.route_names.map((name, idx) => (
+								<Image
+									key={idx}
+									src={`/metros/${name}.png`}
+									alt={name}
+									width={24}
+									height={24}
+								/>
+							))}
+						</div>
+						<span className='whitespace-normal break-words'>
+							{stop.stop_name}
+						</span>
+					</button>
+				))}
+			</div>
 		</div>
 	);
 };

@@ -5,11 +5,9 @@ indent_style = tab
 indent_size = 2
 end_of_line = lf
 charset = utf-8
-quote_type = single
 semicolon = true
 trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.{js,jsx,ts,tsx,json,yml,yaml,md}]
-quote_type = single
 semicolon = true

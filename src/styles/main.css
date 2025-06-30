@@ -49,8 +49,8 @@ body {
 	}
 }
 
-/* Transitions don't work for overflow, so we use keyfames instead.
- * Since the station-indcators are hidden by the hidden overflow, we must de-hide the overflow when the container is open.
+/* Transitions don't work for overflow, so we use keyframes instead.
+ * Since the station-indicators are hidden by the hidden overflow, we must de-hide the overflow when the container is open.
  * If the overflow is instantly visible, the dropdown-like effect is lost. */
 @keyframes overflow-in {
 	from {

@@ -31,7 +31,6 @@ declare module 'react' {
 const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
-	console.log(isOpen);
 	return (
 		<div className='relative pl-4'>
 			<div
