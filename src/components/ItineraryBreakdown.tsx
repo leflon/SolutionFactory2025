@@ -17,6 +17,7 @@ import {
 } from 'react-icons/md';
 import Image from 'next/image';
 import { Fragment, useState } from 'react';
+import MetroLineInfo from '@/components/LineInformation';
 import { t } from '@/lib/i18n';
 type ItineraryBreakdownPartProps = {
 	segment: ItinerarySegment;
@@ -56,6 +57,13 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 						}),
 					}}
 				></span>
+				<MetroLineInfo
+				lineName="Ligne 1"
+				color="#FFD700"
+				openingDate="19 juillet 1900"
+				dailyRiders="750 000"
+				rollingStock="MP 05 (automatique)"
+				/>
 			</div>
 			<div
 				className='flex flex-row items-center cursor-pointer'
