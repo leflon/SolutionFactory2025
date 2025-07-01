@@ -5,7 +5,7 @@ import fr from '../i18n/fr.json';
 export type Language = 'en' | 'fr';
 export const LanguageLabels: Record<Language, string> = {
 	en: 'English',
-	fr: 'Français',
+	fr: 'Français'
 };
 
 // Makes LocaleRecord recursive, accepting infinitely nested entries
@@ -14,7 +14,7 @@ type LocaleRecord = { [key: string]: LocaleEntry };
 
 const locales: Record<Language, LocaleRecord> = {
 	en,
-	fr,
+	fr
 };
 
 /**
@@ -65,7 +65,6 @@ export function t(key: string, params?: Record<string, string | number>) {
 	// Get the requested entry, considering nested entries
 	const keySplit = key.split('.');
 	for (const part of keySplit) {
-		console.log(current, part);
 		// Cannot iterate over a string, so nesting stops here
 		if (typeof current === 'string') break;
 		// Cannot iterate over undefined, so nesting stops here

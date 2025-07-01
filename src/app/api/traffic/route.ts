@@ -1,7 +1,6 @@
-import db, { getStopLine } from '@/lib/db';
+import { getStopLine } from '@/lib/db';
 import { Incident } from '@/lib/types';
-import { NextRequest } from 'next/server';
-import { writeFileSync } from 'node:fs';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Converts an IDFM Date string to a Date object.
@@ -24,29 +23,46 @@ const parseId = (id: string) => {
 	return parsed ? parsed[1] : null;
 };
 
+/**
+ * The cached response for this endpoint, to avoid sending too many requests to IDFM API,
+ * which is rate-limited
+ */
+let cachedResponse: Incident[] | null = null;
+/** The last time data was fetched from IDFM API */
+let lastUpdate = new Date();
+/** The Time To Live of the cached response */
+const cacheTTL = 1000 * 60 * 2; // 2 minutes cache
+
 export async function GET(req: NextRequest) {
+	if (cachedResponse && lastUpdate.getTime() + cacheTTL > Date.now()) {
+		return NextResponse.json({
+			incidents: cachedResponse,
+			lastUpdate: lastUpdate,
+			ttl: cacheTTL
+		});
+	}
 	const res = await fetch(
 		'https://prim.iledefrance-mobilites.fr/marketplace/v2/navitia/line_reports/physical_modes%2Fphysical_mode%3AMetro/line_reports',
 		{
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
-				'apiKey': process.env.IDFM_API_KEY,
-			},
-		},
+				'apiKey': process.env.IDFM_API_KEY
+			}
+		}
 	);
 	const { disruptions } = await res.json();
 	const processedIncidents: Incident[] = [];
 	for (const disruption of disruptions) {
+		if (disruption.status === 'past') continue;
 		if (disruption.tags.includes('Ascenseur')) continue;
 		if (disruption.severity.name === 'information') continue;
 		const incident: Partial<Incident> = {};
 		incident.applicationPeriods = disruption.application_periods.map(
 			(period: { begin: string; end: string }) => ({
 				begin: convertDate(period.begin),
-				end: convertDate(period.end),
-				caca: console.log(period),
-			}),
+				end: convertDate(period.end)
+			})
 		);
 		incident.status = disruption.status;
 		incident.cause =
@@ -54,16 +70,16 @@ export async function GET(req: NextRequest) {
 		incident.severity = {
 			name: disruption.severity.name,
 			effect: disruption.severity.effect,
-			color: disruption.severity.color,
+			color: disruption.severity.color
 		};
 		incident.title = disruption.messages.find(
-			(m: any) => m.channel.name === 'titre',
+			(m: any) => m.channel.name === 'titre'
 		)?.text;
 		incident.message = disruption.messages.find(
-			(m: any) => m.channel.name === 'moteur',
+			(m: any) => m.channel.name === 'moteur'
 		)?.text;
 		incident.shortMessage = disruption.messages.find(
-			(m: any) => m.channel.name === 'cbiv',
+			(m: any) => m.channel.name === 'cbiv'
 		)?.text;
 		incident.impactedObjects = disruption.impacted_objects.map(
 			(object: any) => {
@@ -73,7 +89,7 @@ export async function GET(req: NextRequest) {
 							object: {
 								id: parseId(object.pt_object.line.id),
 								name: object.pt_object.line.name,
-								type: 'line',
+								type: 'line'
 							},
 							impactedSection: object.impacted_section
 								? {
@@ -82,27 +98,27 @@ export async function GET(req: NextRequest) {
 											name: object.impacted_section.from.stop_area.name,
 											coord: {
 												lat: parseFloat(
-													object.impacted_section.from.stop_area.coord.lat,
+													object.impacted_section.from.stop_area.coord.lat
 												),
 												lon: parseFloat(
-													object.impacted_section.from.stop_area.coord.lon,
-												),
-											},
+													object.impacted_section.from.stop_area.coord.lon
+												)
+											}
 										},
 										to: {
 											id: parseId(object.impacted_section.to.id),
 											name: object.impacted_section.to.stop_area.name,
 											coord: {
 												lat: parseFloat(
-													object.impacted_section.to.stop_area.coord.lat,
+													object.impacted_section.to.stop_area.coord.lat
 												),
 												lon: parseFloat(
-													object.impacted_section.to.stop_area.coord.lon,
-												),
-											},
-										},
+													object.impacted_section.to.stop_area.coord.lon
+												)
+											}
+										}
 									}
-								: undefined,
+								: undefined
 						};
 					case 'stop_point':
 					case 'stop_area':
@@ -117,14 +133,20 @@ export async function GET(req: NextRequest) {
 								line,
 								coord: {
 									lat: parseFloat(object.pt_object[type].coord.lat),
-									lon: parseFloat(object.pt_object[type].coord.lon),
-								},
-							},
+									lon: parseFloat(object.pt_object[type].coord.lon)
+								}
+							}
 						};
 				}
-			},
+			}
 		);
 		processedIncidents.push(incident as Incident);
 	}
-	return new Response(JSON.stringify(processedIncidents));
+	cachedResponse = processedIncidents;
+	lastUpdate = new Date();
+	return NextResponse.json({
+		incidents: processedIncidents,
+		lastUpdate: lastUpdate,
+		ttl: cacheTTL
+	});
 }

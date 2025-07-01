@@ -18,6 +18,5 @@ export function getStopLine(stopId: string): { id: string; name: string } {
     WHERE s.stop_id = ?`
 		)
 		.get(stopId);
-	console.log(line);
 	return line as { id: string; name: string };
 }
