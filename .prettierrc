@@ -5,3 +5,4 @@ useTabs: true
 jsxSingleQuote: true
 objectWrap: preserve
 quoteProps: consistent
+trailingComma: none

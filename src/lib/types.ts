@@ -27,11 +27,11 @@ type ImpactedEndpoint = {
 export type Incident = {
 	/** The id of the incident */
 	id: string;
-	/** The period during which the incident is active */
-	applicationPeriod: {
+	/** The periods during which the incident is active */
+	applicationPeriods: Array<{
 		begin: Date;
 		end: Date;
-	};
+	}>;
 	/** The status of the incident */
 	status: 'active' | 'future'; // We don't care about past incidents here.
 	/** The cause of the incident */
@@ -42,6 +42,8 @@ export type Incident = {
 		name: string;
 		/** The effect of the severity on the service */
 		effect: 'SIGNIFICANT_DELAYS' | 'NO_SERVICE' | 'OTHER_EFFECT';
+		/** The hex color used to represent the severity of this incident */
+		color: string;
 	};
 	/** The human-readable title of the incident */
 	title: string;
@@ -59,6 +61,16 @@ export type Incident = {
 			name: string;
 			/** Whether the object is a line or a stop */
 			type: 'line' | 'stop';
+			/** If the object is a stop, the line it belongs to */
+			line?: {
+				id: string;
+				name: string;
+			};
+			/** If the object is a stop, the coordinates of the stop */
+			coord?: {
+				lat: number;
+				lon: number;
+			};
 		};
 		/** If a line is impacted, the section of the line impacted by this incident */
 		impactedSection?: {
