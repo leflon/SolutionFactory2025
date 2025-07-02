@@ -8,13 +8,15 @@ export async function GET(req: NextRequest) {
 			s.name,
 			s.longitude AS latitude,
 			s.latitude AS longitude,
-			GROUP_CONCAT(DISTINCT r.name) AS route_names
-		FROM Stops s
-		JOIN StopTimes st ON s.stop_id = st.stop_id
-		JOIN Trips t ON st.trip_id = t.trip_id
-		JOIN Routes r ON t.route_id = r.route_id
-		WHERE s.latitude IS NOT NULL AND s.longitude IS NOT NULL
-		GROUP BY s.name
+			GROUP_CONCAT(DISTINCT r.name) AS route_names,
+			GROUP_CONCAT(DISTINCT r.background_color) AS route_colors,
+			GROUP_CONCAT(DISTINCT r.text_color) AS route_text_colors
+			FROM Stops s
+			JOIN StopTimes st ON s.stop_id = st.stop_id
+			JOIN Trips t ON st.trip_id = t.trip_id
+			JOIN Routes r ON t.route_id = r.route_id
+			WHERE s.latitude IS NOT NULL AND s.longitude IS NOT NULL
+			GROUP BY s.name
 `);
 
   const rows = stmt.all() as {
@@ -23,7 +25,15 @@ export async function GET(req: NextRequest) {
     latitude: number;
     longitude: number;
     route_names: string;
+		route_colors: string;
+		route_text_colors: string;
   }[];
+
+  rows.forEach(row => {
+    row.route_names = row.route_names || '';
+    row.route_colors = row.route_colors || '';
+    row.route_text_colors = row.route_text_colors || '';
+  });
 
   return Response.json({ stops: rows });
 }

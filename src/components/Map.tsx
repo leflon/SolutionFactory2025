@@ -2,6 +2,10 @@ import { MapContainer, TileLayer, Marker, Polyline, GeoJSON, useMapEvents, useMa
 import { useEffect, useState } from 'react';
 import L, { LeafletMouseEvent } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import type { Feature } from 'geojson';
+import { renderToStaticMarkup } from "react-dom/server";
+import { VscDebugBreakpointData } from "react-icons/vsc";
+
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -18,8 +22,8 @@ const smallIcon = L.icon({
   shadowUrl: '/leaflet/images/marker-shadow.png',
   iconSize: [18, 28], // width, height (default is [25, 41])
   iconAnchor: [9, 28], // point of the icon which will correspond to marker's location
-  popupAnchor: [1, -24],
-  shadowSize: [10, 10]
+  popupAnchor: [0, 0],
+  shadowSize: [20, 20]
 });
 
 type Stop = {
@@ -28,11 +32,15 @@ type Stop = {
   latitude: number;
   longitude: number;
   route_names: string;
+  route_colors: string;
+  route_text_colors: string;
 };
 
 export default function MapInteractive() {
   const [points, setPoints] = useState<[number, number][]>([]);
   const [geojson, setGeojson] = useState<any>(null);
+  const [colorMap, setColorMap] = useState<{ [key: string]: string }>({});
+  const [coloredGeojson, setColoredGeojson] = useState<any>(null);
   const [stops, setStops] = useState<Stop[]>([]);
 
   // Load GeoJSON on mount
@@ -52,6 +60,49 @@ export default function MapInteractive() {
         setStops(data.stops);
       });
   }, []);
+
+  // Fetch route colors from the database
+  useEffect(() => {
+    fetch('/api/routes-colors')
+      .then(res => res.text())
+      .then(text => {
+        console.log('routes-colors response:', text);
+        // Try parsing
+        try {
+          const data = JSON.parse(text);
+          const map: { [key: string]: string } = {};
+          for (const row of data) {
+            map[row.route_id] = row.background_color;
+          }
+          setColorMap(map);
+        } catch (e) {
+          console.error('Failed to parse routes-colors JSON:', e);
+        }
+      });
+  }, []);
+
+  // After fetching geojson and routeColors
+  useEffect(() => {
+    if (geojson && geojson.features && colorMap && Object.keys(colorMap).length > 0) {
+      const newGeojson = {
+        ...geojson,
+        features: geojson.features.map((feature: Feature) => {
+          const routeId = (feature.properties as any)?.colourweb_hexa;
+          if (routeId && colorMap[routeId]) {
+            return {
+              ...feature,
+              properties: {
+                ...feature.properties,
+                color: '#' + colorMap[routeId].replace(/^#/, ''),
+              },
+            };
+          }
+          return feature;
+        }),
+      };
+      setColoredGeojson(newGeojson);
+    }
+  }, [geojson, colorMap]);
 
   function ForceResize() {
     const map = useMap();
@@ -99,6 +150,22 @@ export default function MapInteractive() {
   }
   const uniqueStops = Array.from(stopsById.values());
 
+  function getStopIcon(color: string = "#e06c75", size: number = 28) {
+    // Render the icon as SVG string with the desired color and size
+    const svgString = encodeURIComponent(
+      renderToStaticMarkup(
+        <VscDebugBreakpointData color={color} size={size} />
+      )
+    );
+    return L.divIcon({
+      className: '',
+      html: `<img src="data:image/svg+xml,${svgString}" style="display:block;" />`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size],
+      popupAnchor: [0, -size / 2],
+    });
+  }
+
   return (
     <div className="map-wrapper">
       <MapContainer
@@ -116,9 +183,14 @@ export default function MapInteractive() {
           <Marker key={idx} position={pos} />
         ))}
         {points.length >= 2 && <Polyline positions={points} />}
-        {geojson && (
+        {coloredGeojson && (
           <GeoJSON
-            data={geojson}
+            data={coloredGeojson}
+            style={feature => ({
+              color: feature?.properties?.color || '#3388ff',
+              weight: 4,
+              opacity: 1,
+            })}
             pointToLayer={(_, latlng) =>
               L.circleMarker(latlng, {
                 radius: 6,
@@ -130,28 +202,51 @@ export default function MapInteractive() {
               })
             }
             onEachFeature={(feature, layer) => {
-              if (feature.properties) {
+              if (feature && feature.properties) {
                 layer.bindPopup(
                   `<b>${feature.properties.reseau || ''}</b><br>ID: ${feature.properties.idrefliga || ''}`
                 );
               }
             }}
           />
-        )}{uniqueStops.map(stop => (
-				<Marker
-					key={stop.stop_id}
-					position={[stop.latitude, stop.longitude]}
-					icon={smallIcon}
-				>
-					<Popup>
-						<b>{stop.name}</b>
-						<br />
-						{stop.route_names
-							? <>Lines: {stop.route_names}</>
-							: <>No line info</>}
-					</Popup>
-				</Marker>
-        ))}
+        )}
+        {uniqueStops.map(stop => {
+          const lines = stop.route_names.split(',');
+          const colors = stop.route_colors.split(',');
+          const textColors = stop.route_text_colors.split(',');
+          return (
+            <Marker
+              key={stop.stop_id}
+              position={[stop.latitude, stop.longitude]}
+              icon={getStopIcon(colors[0])} // Use the first line color or any color you want
+            >
+              <Popup>
+                <b>{stop.name}</b>
+                <br />
+                Lines:
+                <ul style={{margin: 0, paddingLeft: 16}}>
+                  {lines.map((line, i) => (
+                    <li key={line}>
+                      <span
+                        style={{
+                          background: colors[i] || '#ccc',
+                          color: textColors[i] || '#000',
+                          padding: '2px 6px',
+                          borderRadius: 4,
+                          marginRight: 4,
+                          fontWeight: 600,
+                          display: 'inline-block'
+                        }}
+                      >
+                        {line}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );
