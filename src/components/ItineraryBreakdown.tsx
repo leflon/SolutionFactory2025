@@ -58,11 +58,7 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 					}}
 				></span>
 				<MetroLineInfo
-				lineName="Ligne 1"
-				color="#FFD700"
-				openingDate="19 juillet 1900"
-				dailyRiders="750 000"
-				rollingStock="MP 05 (automatique)"
+				lineName={`${segment.line}`}
 				/>
 			</div>
 			<div
