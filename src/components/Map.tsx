@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Polyline, GeoJSON, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, GeoJSON, useMapEvents, useMap, Popup } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import L, { LeafletMouseEvent } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -11,30 +11,29 @@ L.Icon.Default.mergeOptions({
   shadowUrl: '/leaflet/images/marker-shadow.png',
 });
 
-function ForceResize() {
-  const map = useMap();
-  useEffect(() => {
-    function handleResize() {
-      map.invalidateSize();
-    }
-    // Invalidate size several times after mount
-    const timeouts = [
-      setTimeout(handleResize, 100),
-      setTimeout(handleResize, 500),
-      setTimeout(handleResize, 1000),
-    ];
-    window.addEventListener('resize', handleResize);
-    return () => {
-      timeouts.forEach(clearTimeout);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [map]);
-  return null;
-}
+// Define a smaller icon
+const smallIcon = L.icon({
+  iconUrl: '/leaflet/images/marker-icon.png',
+  iconRetinaUrl: '/leaflet/images/marker-icon-2x.png',
+  shadowUrl: '/leaflet/images/marker-shadow.png',
+  iconSize: [18, 28], // width, height (default is [25, 41])
+  iconAnchor: [9, 28], // point of the icon which will correspond to marker's location
+  popupAnchor: [1, -24],
+  shadowSize: [10, 10]
+});
+
+type Stop = {
+  stop_id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  route_names: string;
+};
 
 export default function MapInteractive() {
   const [points, setPoints] = useState<[number, number][]>([]);
   const [geojson, setGeojson] = useState<any>(null);
+  const [stops, setStops] = useState<Stop[]>([]);
 
   // Load GeoJSON on mount
   useEffect(() => {
@@ -44,6 +43,37 @@ export default function MapInteractive() {
       .catch(console.error);
   }, []);
 
+  // Fetch stops on mount
+  useEffect(() => {
+    fetch('/api/stops')
+      .then(res => res.json())
+      .then(data => {
+        console.log('Fetched stops:', data.stops);
+        setStops(data.stops);
+      });
+  }, []);
+
+  function ForceResize() {
+    const map = useMap();
+    useEffect(() => {
+      function handleResize() {
+        map.invalidateSize();
+      }
+      // Invalidate size several times after mount
+      const timeouts = [
+        setTimeout(handleResize, 100),
+        setTimeout(handleResize, 500),
+        setTimeout(handleResize, 1000),
+      ];
+      window.addEventListener('resize', handleResize);
+      return () => {
+        timeouts.forEach(clearTimeout);
+        window.removeEventListener('resize', handleResize);
+      };
+    }, [map]);
+    return null;
+  }
+
   function ClickHandler() {
     useMapEvents({
       click(e: LeafletMouseEvent) {
@@ -52,6 +82,22 @@ export default function MapInteractive() {
     });
     return null;
   }
+
+  const stopsById = new Map<string, Stop>();
+
+  for (const stop of stops) {
+    if (!stopsById.has(stop.stop_id)) {
+      stopsById.set(stop.stop_id, { ...stop });
+    } else {
+      const existing = stopsById.get(stop.stop_id)!;
+      const allLines = new Set([
+        ...existing.route_names.split(','),
+        ...stop.route_names.split(','),
+      ]);
+      existing.route_names = Array.from(allLines).join(',');
+    }
+  }
+  const uniqueStops = Array.from(stopsById.values());
 
   return (
     <div className="map-wrapper">
@@ -91,7 +137,21 @@ export default function MapInteractive() {
               }
             }}
           />
-        )}
+        )}{uniqueStops.map(stop => (
+				<Marker
+					key={stop.stop_id}
+					position={[stop.latitude, stop.longitude]}
+					icon={smallIcon}
+				>
+					<Popup>
+						<b>{stop.name}</b>
+						<br />
+						{stop.route_names
+							? <>Lines: {stop.route_names}</>
+							: <>No line info</>}
+					</Popup>
+				</Marker>
+        ))}
       </MapContainer>
     </div>
   );
