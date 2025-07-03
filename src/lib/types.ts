@@ -45,6 +45,11 @@ export type Incident = {
 		/** The hex color used to represent the severity of this incident */
 		color: string;
 	};
+	/** The impacted line */
+	line: {
+		id: string;
+		name: string;
+	};
 	/** The human-readable title of the incident */
 	title: string;
 	/** The complete message describing the incident, in HTML. */

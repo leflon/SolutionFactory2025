@@ -3,22 +3,39 @@
 import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
+import TrafficInfo from '@/components/TrafficInfo';
 import { t } from '@/lib/i18n';
 import { PLACEHOLDER_ITINERARY } from '@/lib/Itinerary';
-import { ItineraryEndpoints } from '@/lib/types';
-import { useState } from 'react';
+import { Incident, ItineraryEndpoints } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
+	const [trafficInfo, setTrafficInfo] = useState<{
+		incidents: Incident[];
+		lastUpdate: Date;
+	} | null>(null);
+
 	const handleItineraryRequest = (endpoints: ItineraryEndpoints) => {
 		console.log('Request: ', endpoints);
 		// TODO: Implement
 	};
+
+	const fetchIncidents = async () => {
+		const res = await fetch('/api/traffic');
+		const json = await res.json();
+		setTrafficInfo({
+			incidents: json.incidents,
+			lastUpdate: new Date(json.lastUpdate)
+		});
+	};
+	useEffect(() => void fetchIncidents(), []); // Fetch incidents automatically only once, on component mount.
 
 	return (
 		<div>
 			<Navbar />
 			<ItinerarySelector onRequest={handleItineraryRequest} />
 			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
+			{trafficInfo && <TrafficInfo {...trafficInfo} />}
 		</div>
 	);
 }

@@ -12,5 +12,8 @@
 			"one": "{{count}} stop",
 			"other": "{{count}} stops"
 		}
+	},
+	"TrafficInfo": {
+		"lastUpdate": "Last update: {{time}}"
 	}
 }

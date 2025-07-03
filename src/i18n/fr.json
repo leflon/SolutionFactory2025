@@ -12,5 +12,8 @@
 			"one": "{{count}} arrêt",
 			"other": "{{count}} arrêts"
 		}
+	},
+	"TrafficInfo": {
+		"lastUpdate": "Dernière mise à jour: {{time}}"
 	}
 }

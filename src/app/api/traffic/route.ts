@@ -85,6 +85,11 @@ export async function GET(req: NextRequest) {
 			(object: any) => {
 				switch (object.pt_object.embedded_type) {
 					case 'line':
+						if (!incident.line)
+							incident.line = {
+								id: object.pt_object.line.id,
+								name: object.pt_object.line.name
+							};
 						return {
 							object: {
 								id: parseId(object.pt_object.line.id),
@@ -125,6 +130,7 @@ export async function GET(req: NextRequest) {
 						const type = object.pt_object.embedded_type;
 						const stopId = parseId(object.pt_object[type].id)!;
 						const line = getStopLine(stopId);
+						if (!incident.line) incident.line = line;
 						return {
 							object: {
 								id: stopId,
