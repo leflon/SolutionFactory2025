@@ -12,19 +12,23 @@ function timeDiff(t1, t2) {
     return parseTimeToMinutes(t2) - parseTimeToMinutes(t1);
 }
 
-async function buildGraph(db, startTime) {
+async function buildGraph(db, startStop, startTime) {
     const graph = {};
 
     // 1. Trajets dans un même trip
     const trips = await db.all(`
-        SELECT DISTINCT Trips.trip_id 
+        SELECT DISTINCT Trips.trip_id, route_id
         FROM Trips 
         JOIN StopTimes
         ON Trips.trip_id = StopTimes.trip_id
-        WHERE departure_time >= ?
-        GROUP BY route_id
-        ORDER BY departure_time`,[startTime]);
-    const timeThreshold = startTime;
+        WHERE stop_id = ?
+        AND departure_time >= ?
+        AND departure_time <= ?
+        ORDER BY departure_time`,[startStop, startTime, "10:30:00"]);
+    for ( const { trip_id } of trips ){
+        console.log(trip_id)
+    }
+    //const timeThreshold = startTime;
     for (const { trip_id } of trips) {
         const stops = await db.all(`
         SELECT stop_id, departure_time
@@ -65,7 +69,7 @@ function dijkstra(graph, startNode) {
     distances[startNode] = 0;
 
     while (queue.size > 0) {
-        console.log(queue.size)
+        console.log("n°",queue.size)
         let current = [...queue].reduce((min, node) => distances[node] < distances[min] ? node : min, [...queue][0]);
         queue.delete(current);
 
@@ -76,7 +80,7 @@ function dijkstra(graph, startNode) {
             const alt = distances[current] + neighbor.weight;
             console.log(alt, distances[neighbor.to], current, neighbor, distances[current])
             if (alt < distances[neighbor.to] || !distances[neighbor.to]) {
-                console.log("THERRERERRE")
+                console.log(current, " To ", neighbor)
                 distances[neighbor.to] = alt;
                 previous[neighbor.to] = current;
             }
@@ -104,7 +108,7 @@ async function findBestRoute(startStop, endStop, startTime = "08:00:00") {
         driver: sqlite3.Database
     });
 
-    const graph = await buildGraph(db, startTime);
+    const graph = await buildGraph(db, startStop, startTime);
 
     const startNodes = Object.keys(graph).filter(n => n.startsWith(`${startStop}@`));
     const endNodes = Object.keys(graph).filter(n => n.startsWith(`${endStop}@`));
@@ -113,13 +117,16 @@ async function findBestRoute(startStop, endStop, startTime = "08:00:00") {
         console.log("No matching start or end stop found in graph.");
         return;
     }
-    console.log(startNodes)
-    //const bestStart = startNodes.find(n => parseTimeToMinutes(n.split('@')[1]) >= parseTimeToMinutes(startTime));
-    //console.log(bestStart)
-    //if (!bestStart) {
-      //  console.log("No valid starting time found.");
-        //return;
-    //}
+    const bestStart = startNodes.find(n => parseTimeToMinutes(n.split('@')[1]) >= parseTimeToMinutes(startTime));
+    console.log(bestStart)
+    if (!bestStart || !graph[bestStart]) {
+        console.log("Start node:", bestStart);
+        console.log("End nodes:", endNodes.slice(0, 5));
+        console.log("Graph has start:", graph.hasOwnProperty(bestStart));
+        console.log("Graph size:", Object.keys(graph).length)
+        console.error("No valid start node found in the graph for this time.");
+        return;
+    }
 
     const { distances, previous } = dijkstra(graph, startNodes[0]);
 
@@ -136,10 +143,10 @@ async function findBestRoute(startStop, endStop, startTime = "08:00:00") {
         }
     }
 
-    //if (!bestEnd) {
-    //    console.log("No reachable destination found.");
-    //    return;
-    //}
+    if (!bestEnd) {
+        console.log("No reachable destination found.");
+        return;
+    }
 
     const itnry = reconstructPath(previous, endNodes[0]);
     console.log("Best path:");
@@ -151,4 +158,23 @@ async function findBestRoute(startStop, endStop, startTime = "08:00:00") {
 
 
 // Exemple d’appel
-findBestRoute("IDFM:21958", "IDFM:463323", "08:00:00");
+//findBestRoute("IDFM:21958", "IDFM:463323", "08:00:00");
+
+async function stopIsWhichLine(stop_id){
+    const db = await open({
+        filename: path.join(__dirname, dir, 'db.sqlite'),
+        driver: sqlite3.Database
+    });
+    const line = await db.all(`
+        SELECT DISTINCT route_id
+        FROM Trips
+        JOIN StopTimes
+        ON Trips.trip_id = StopTimes.trip_id
+        WHERE stop_id = ? 
+        `, [stop_id])
+    console.log(line[0]["route_id"]);
+    db.close()
+}
+
+console.log("Gare de Lyon is on line")
+stopIsWhichLine("IDFM:21958")
