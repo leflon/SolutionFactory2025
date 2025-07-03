@@ -13,11 +13,15 @@
 		"@tailwindcss/postcss": "^4.1.10",
 		"@tailwindcss/vite": "^4.1.10",
 		"better-sqlite3": "^12.0.0",
+		"heap": "^0.2.7",
 		"next": "15.3.4",
 		"postcss": "^8.5.6",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
-		"tailwindcss": "^4.1.10"
+		"sqlite": "^5.1.1",
+		"sqlite3": "^5.1.7",
+		"tailwindcss": "^4.1.10",
+		"tinyqueue": "^3.0.0"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.13",
