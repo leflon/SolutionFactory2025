@@ -12,8 +12,10 @@ import { BiSolidTrafficCone } from 'react-icons/bi';
 import { BsExclamation } from 'react-icons/bs';
 import { IoClose } from 'react-icons/io5';
 import { t } from '@/lib/i18n';
+import { MdClose } from 'react-icons/md';
 
 type TrafficInfoPaginationProps = {
+	className?: string;
 	incidents: Incident[];
 	currentIncident: number;
 	setCurrentIncident: Dispatch<SetStateAction<number>>;
@@ -22,7 +24,8 @@ type TrafficInfoPaginationProps = {
 const TrafficInfoPagination = ({
 	incidents,
 	currentIncident,
-	setCurrentIncident
+	setCurrentIncident,
+	className
 }: TrafficInfoPaginationProps) => {
 	const DEFAULT_ANIMATION_DURATION = 10_000;
 	const LONG_ANIMATION_DURATION = 20_000;
@@ -34,6 +37,7 @@ const TrafficInfoPagination = ({
 	const animationDuration = useRef(DEFAULT_ANIMATION_DURATION);
 	// Represents the timestamp of the beginning of the current animation.
 	const animationStartTime = useRef<number>(null);
+	const animationFrame = useRef<number>(null);
 
 	const currentIndicatorWidth =
 		(animationState / animationDuration.current) * 100 + '%';
@@ -69,12 +73,20 @@ const TrafficInfoPagination = ({
 				animationDuration.current = DEFAULT_ANIMATION_DURATION;
 		} else setAnimationState(progress);
 
-		requestAnimationFrame(animate);
+		animationFrame.current = requestAnimationFrame(animate);
 	};
 
-	useEffect(() => animate(), []);
+	useEffect(() => {
+		animate();
+		return () => cancelAnimationFrame(animationFrame.current || 0);
+	}, []);
 	return (
-		<div className='w-full flex gap-1 group justify-center items-center absolute bottom-1'>
+		<div
+			className={
+				'w-full flex gap-1 group justify-center items-center absolute bottom-1 ' +
+				className
+			}
+		>
 			{incidents.map((incident, i) => (
 				<div
 					key={i}
@@ -127,6 +139,7 @@ const TrafficInfo = ({
 	lineFilter
 }: TrafficInfoProps) => {
 	const [currentIncident, setCurrentIncident] = useState(0);
+	const [isShrunk, setIsShrunk] = useState(false);
 
 	const sortedIncidents = useMemo(() => {
 		return incidents
@@ -167,10 +180,27 @@ const TrafficInfo = ({
 
 	return (
 		<div
-			className='box-border relative p-3 h-24 bg-white rounded-2xl border-[1px] border-gray-300
-			flex items-center gap-3 *:transition-opacity *:duration-150'
+			className={
+				`box-border relative bg-white rounded-2xl border-[1px] border-gray-300
+			flex items-center gap-3 overflow-hidden group ` +
+				(isShrunk
+					? 'rounded-full size-18 justify-center self-end'
+					: 'h-22 pl-3 w-full')
+			}
 		>
-			<div className='absolute italic text-xs bottom-0 right-2 text-gray-300'>
+			<div
+				className='z-50 absolute top-1 right-1 group-hover:opacity-100 opacity-0 cursor-pointer'
+				hidden={isShrunk}
+				onClick={() => setIsShrunk(true)}
+			>
+				<MdClose size={24}></MdClose>
+			</div>
+			<div
+				className={
+					'absolute italic text-xs bottom-0 right-5 text-gray-300 ' +
+					(isShrunk ? 'opacity-0' : '')
+				}
+			>
 				{t('TrafficInfo.lastUpdate', {
 					time: lastUpdate.toLocaleTimeString(navigator.language, {
 						hour: '2-digit',
@@ -180,12 +210,17 @@ const TrafficInfo = ({
 			</div>
 			<div
 				key={'img' + currentIncident}
-				className='relative shrink-0 animate-[fadeIn_1s_ease]'
+				className={
+					'shrink-0 animate-[fadeIn_1s_ease] relative ' +
+					(isShrunk ? 'cursor-pointer' : '')
+				}
+				onClick={() => setIsShrunk(false)}
 			>
 				<Image
 					src={`/metros/${sortedIncidents[currentIncident].line.name}.png`}
-					width={48}
-					height={48}
+					width={96}
+					height={96}
+					className={isShrunk ? 'size-9' : 'size-12'}
 					alt={sortedIncidents[currentIncident].line.name}
 				/>
 				<div
@@ -210,19 +245,23 @@ const TrafficInfo = ({
 			</div>
 			<div
 				key={'body' + currentIncident}
-				className='relative h-full flex flex-col animate-[fadeIn_1s_ease]'
+				className={
+					'relative self-start h-10/12 flex-col animate-[fadeIn_1s_ease] transition-[width] duration-1000 overflow-x-hidden overflow-y-auto scrollbar- ' +
+					(isShrunk ? 'hidden' : 'flex w-full')
+				}
 			>
 				<div className='relative text-lg font-bold'>
 					{sortedIncidents[currentIncident].title}
 				</div>
 				<div
-					className='relative text-sm overflow-auto'
+					className='relative text-sm'
 					dangerouslySetInnerHTML={{
 						__html: sortedIncidents[currentIncident].message
 					}}
 				></div>
 			</div>
 			<TrafficInfoPagination
+				className={isShrunk ? 'opacity-0' : ''}
 				incidents={sortedIncidents}
 				currentIncident={currentIncident}
 				setCurrentIncident={setCurrentIncident}
