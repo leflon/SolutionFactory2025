@@ -87,7 +87,8 @@ export async function GET(req: NextRequest) {
 					case 'line':
 						if (!incident.line)
 							incident.line = {
-								id: object.pt_object.line.id,
+								id:
+									parseId(object.pt_object.line.id) || object.pt_object.line.id,
 								name: object.pt_object.line.name
 							};
 						return {

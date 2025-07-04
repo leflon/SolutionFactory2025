@@ -113,50 +113,62 @@ const TrafficInfoPagination = ({
 };
 
 type TrafficInfoProps = {
+	/** All the available incidents to display */
 	incidents: Incident[];
+	/** The last time the data was fetched from IDFM */
 	lastUpdate: Date;
+	/** Filters incidents to display only those associated with this line Id */
+	lineFilter?: string;
 };
 
-const TrafficInfo = ({ incidents, lastUpdate }: TrafficInfoProps) => {
+const TrafficInfo = ({
+	incidents,
+	lastUpdate,
+	lineFilter
+}: TrafficInfoProps) => {
 	const [currentIncident, setCurrentIncident] = useState(0);
 
 	const sortedIncidents = useMemo(() => {
-		return incidents.slice().sort((a, b) => {
-			// First, sort by status: 'active' incidents come before others
-			if (a.status === 'active' && b.status !== 'active') {
-				return -1;
-			}
-			if (a.status !== 'active' && b.status === 'active') {
-				return 1;
-			}
+		return incidents
+			.slice()
+			.sort((a, b) => {
+				// First, sort by status: 'active' incidents come before others
+				if (a.status === 'active' && b.status !== 'active') {
+					return -1;
+				}
+				if (a.status !== 'active' && b.status === 'active') {
+					return 1;
+				}
 
-			// Then sort by cause: 'disruption' events come before others
-			if (a.cause === 'disruption' && b.cause !== 'disruption') {
-				return -1;
-			}
-			if (a.cause !== 'disruption' && b.cause === 'disruption') {
-				return 1;
-			}
+				// Then sort by cause: 'disruption' events come before others
+				if (a.cause === 'disruption' && b.cause !== 'disruption') {
+					return -1;
+				}
+				if (a.cause !== 'disruption' && b.cause === 'disruption') {
+					return 1;
+				}
 
-			// Finally sort by severity effect priority: NO_SERVICE > SIGNIFICANT_DELAYS > OTHER_EFFECT
-			const severityPriority = {
-				NO_SERVICE: 3,
-				SIGNIFICANT_DELAYS: 2,
-				OTHER_EFFECT: 1
-			};
+				// Finally sort by severity effect priority: NO_SERVICE > SIGNIFICANT_DELAYS > OTHER_EFFECT
+				const severityPriority = {
+					NO_SERVICE: 3,
+					SIGNIFICANT_DELAYS: 2,
+					OTHER_EFFECT: 1
+				};
 
-			const aPriority = severityPriority[a.severity.effect];
-			const bPriority = severityPriority[b.severity.effect];
+				const aPriority = severityPriority[a.severity.effect];
+				const bPriority = severityPriority[b.severity.effect];
 
-			return bPriority - aPriority;
-		});
+				return bPriority - aPriority;
+			})
+			.filter((incident) =>
+				lineFilter ? incident.line.id === lineFilter : true
+			);
 	}, [incidents]);
 
 	return (
 		<div
-			className='box-border fixed w-1/2 p-3 h-24 left-1/2 translate-x-[-50%]
-			bottom-8 bg-white rounded-2xl border-[1px] border-gray-300
-			shadow-lg flex items-center gap-3 *:transition-opacity *:duration-150'
+			className='box-border relative p-3 h-24 bg-white rounded-2xl border-[1px] border-gray-300
+			flex items-center gap-3 *:transition-opacity *:duration-150'
 		>
 			<div className='absolute italic text-xs bottom-0 right-2 text-gray-300'>
 				{t('TrafficInfo.lastUpdate', {
