@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
 const dir = '../../../../data/'
-
+/*
 function parseTimeToMinutes(timeStr) {
     const [h, m, s] = timeStr.split(":").map(Number);
     return h * 60 + m + s / 60;
@@ -12,7 +12,7 @@ function timeDiff(t1, t2) {
     return parseTimeToMinutes(t2) - parseTimeToMinutes(t1);
 }
 
-async function buildGraph(db, startTime) {
+async function buildGraph(startTime) {
     const graph = {};
 
     // 1. Trajets dans un même trip
@@ -36,8 +36,8 @@ async function buildGraph(db, startTime) {
             const from = `${stops[i].stop_id}@${stops[i].departure_time}`;
             const to = `${stops[i + 1].stop_id}@${stops[i + 1].departure_time}`;
             const duration = timeDiff(stops[i].departure_time, stops[i + 1].departure_time);
-            if (!graph[from]) graph[from] = [];
-            graph[from].push({ to, weight: duration });
+            //if (!graph[from]) graph[from] = [];
+            //graph[from].push({ to, weight: duration });
         }
     }
 
@@ -46,8 +46,8 @@ async function buildGraph(db, startTime) {
     for (const { from_id, to_id, time } of transfers) {
         const fromKey = `${from_id}@TRANSFER`;
         const toKey = `${to_id}@TRANSFER`;
-        if (!graph[fromKey]) graph[fromKey] = [];
-        graph[fromKey].push({ to: toKey, weight: time });
+        //if (!graph[fromKey]) graph[fromKey] = [];
+        //graph[fromKey].push({ to: toKey, weight: time });
     }
 
     return graph;
@@ -151,4 +151,113 @@ async function findBestRoute(startStop, endStop, startTime = "08:00:00") {
 
 
 // Exemple d’appel
-findBestRoute("IDFM:21958", "IDFM:463323", "08:00:00");
+//findBestRoute("IDFM:21958", "IDFM:463323", "08:00:00");
+
+
+
+/*
+async function stopIsOnWhichLine(db, stop_id){
+    const fetchLine = await db.all(`
+        SELECT DISTINCT route_id, stop_id
+        FROM Trips
+        JOIN StopTimes
+        ON Trips.trip_id = StopTimes.trip_id
+        WHERE stop_id = ? 
+        `, [stop_id])
+    const line = fetchLine[0]["route_id"];
+    console.log(line)
+    return line;
+}
+
+
+async function LineIntersection(){
+    const db = await open({
+        filename: path.join(__dirname, dir, 'db.sqlite'),
+        driver: sqlite3.Database
+    });
+    const fetchIntersec = await db.all(`
+        SELECT route_id from_id, to_id, 
+        FROM Transfers, Trips
+        JOIN StopTimes
+        ON StopTimes.stop_id = Transfers.from_id
+        JOIN Trips
+        ON Trips.trip_id = StopTimes.trip_id
+        WHERE stop_id = ? 
+        `)
+    const stops = fetchIntersec
+    console.log(stops)
+    
+    console.log(stops[0]["route_id"], stops[0]["stop_id"], stops[0]["to_id"], stops.length)
+    
+    const FetchLines = await db.all(`
+    SELECT route_id
+    FROM Routes
+    `)
+    const Lines = FetchLines
+    console.log(Lines.length)
+    for (let i = 0; i < Lines.length; i++){
+        const line = Lines[i]
+        for (let j = 0; j < stops.length; j++){
+            const stop = stops[i]
+            console.log(line["route_id"], stopIsOnWhichLine(db, stop["from_id"]))
+            if (line["route_id"] == stopIsOnWhichLine(db, stop["from_id"]))
+                console.log(stops.find( (e) => e["from_id"] == stop["from_id"]))
+        }
+
+    }
+    
+
+    db.close()
+}
+
+//LineIntersection()
+*/
+
+
+async function computeIntersections() {
+    const db = await open({
+    filename: path.join(__dirname, dir, 'db.sqlite'),
+    driver: sqlite3.Database
+});
+
+  const transfers = await db.all("SELECT from_id, to_id FROM transfers");
+
+  const transferStops = new Set();
+  const transferDict = {}
+  transfers.forEach( row => {
+    const from = row.from_id
+    const to = row.to_id
+    if(!transferDict[from]){
+        transferDict[from] = []
+    }
+    transferDict[from].push(to)
+    transferStops.add(from);
+    transferStops.add();
+  })
+  console.log("Here" ,transferDict["IDFM:463079"])
+
+  const stopRoutes = await db.all(`
+    SELECT DISTINCT stop_id, Trips.route_id
+    FROM StopTimes
+    JOIN Trips
+    ON StopTimes.trip_id = Trips.trip_id
+    WHERE stop_id IN (${[...transferStops].map(() => '?').join(',')})
+  `, [...transferStops]);
+
+  const stopRouteDict = {}
+  const routeOfStopDict = {}
+  stopRoutes.forEach(row =>{
+    const route = row.route_id
+    const stop = row.stop_id
+    routeOfStopDict[stop] = route
+    if(!stopRouteDict[route]){
+        stopRouteDict[route] = []
+    }
+    stopRouteDict[route].push(stop)
+  })
+  console.log("there",stopRouteDict['IDFM:C01371'][0], stopRouteDict['IDFM:C01371'][1])
+  return 
+}
+
+
+computeIntersections();
