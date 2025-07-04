@@ -1,10 +1,13 @@
-import { MapContainer, TileLayer, Marker, Polyline, GeoJSON, useMapEvents, useMap, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, GeoJSON, useMapEvents, useMap, Popup, CircleMarker } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import L, { LeafletMouseEvent } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Feature } from 'geojson';
 import { renderToStaticMarkup } from "react-dom/server";
 import { VscDebugBreakpointData } from "react-icons/vsc";
+import { BiSolidPolygon } from "react-icons/bi";
+import { FaRegCircle } from "react-icons/fa";
+import React from 'react';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 
@@ -20,7 +23,7 @@ const smallIcon = L.icon({
   iconUrl: '/leaflet/images/marker-icon.png',
   iconRetinaUrl: '/leaflet/images/marker-icon-2x.png',
   shadowUrl: '/leaflet/images/marker-shadow.png',
-  iconSize: [18, 28], // width, height (default is [25, 41])
+  iconSize: [100, 280], // width, height (default is [25, 41])
   iconAnchor: [9, 28], // point of the icon which will correspond to marker's location
   popupAnchor: [0, 0],
   shadowSize: [20, 20]
@@ -125,12 +128,12 @@ export default function MapInteractive() {
     return null;
   }
 
-  function ClickHandler() {
+  function ClickHandler() {/*
     useMapEvents({
       click(e: LeafletMouseEvent) {
         setPoints((pts) => [...pts, [e.latlng.lat, e.latlng.lng]]);
       },
-    });
+    });*/
     return null;
   }
 
@@ -150,18 +153,18 @@ export default function MapInteractive() {
   }
   const uniqueStops = Array.from(stopsById.values());
 
-  function getStopIcon(color: string = "#e06c75", size: number = 28) {
+  function getStopIcon(color: string = "#e06c75", size: number = 18) {
     // Render the icon as SVG string with the desired color and size
     const svgString = encodeURIComponent(
       renderToStaticMarkup(
-        <VscDebugBreakpointData color={color} size={size} />
+        <FaRegCircle color={color} size={size}/>
       )
     );
     return L.divIcon({
       className: '',
       html: `<img src="data:image/svg+xml,${svgString}" style="display:block;" />`,
       iconSize: [size, size],
-      iconAnchor: [size / 2, size],
+      iconAnchor: [size / 2, size / 2],
       popupAnchor: [0, -size / 2],
     });
   }
@@ -171,6 +174,8 @@ export default function MapInteractive() {
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={12}
+        minZoom={13}   //  minimum zoom level
+        maxZoom={18}   //  maximum zoom level
         style={{ height: '100%', width: '100%' }}
       >
         <ForceResize />
@@ -186,65 +191,79 @@ export default function MapInteractive() {
         {coloredGeojson && (
           <GeoJSON
             data={coloredGeojson}
-            style={feature => ({
-              color: feature?.properties?.color || '#3388ff',
-              weight: 4,
-              opacity: 1,
-            })}
-            pointToLayer={(_, latlng) =>
-              L.circleMarker(latlng, {
-                radius: 6,
-                fillColor: '#3388ff',
-                color: '#000',
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8,
-              })
-            }
-            onEachFeature={(feature, layer) => {
-              if (feature && feature.properties) {
-                layer.bindPopup(
-                  `<b>${feature.properties.reseau || ''}</b><br>ID: ${feature.properties.idrefliga || ''}`
-                );
+            style={feature => {
+              // Example: choose color based on a property
+              switch (feature?.properties?.res_com) {
+								case 'METRO 1': return { color: '#FFBE00', weight: 4, opacity: 1 };
+                case 'METRO 2': return { color: '#0055C8', weight: 4, opacity: 1 };
+								case 'METRO 3': return { color: '#6E6E00', weight: 4, opacity: 1 };
+								case 'METRO 4': return { color: '#A0006E', weight: 4, opacity: 1 };
+								case 'METRO 5': return { color: '#FF7E2E', weight: 4, opacity: 1 };
+								case 'METRO 6': return { color: '#6ECA97', weight: 4, opacity: 1 };
+								case 'METRO 7': return { color: '#F49FB3', weight: 4, opacity: 1 };
+								case 'METRO 8': return { color: '#D282BE', weight: 4, opacity: 1 };
+								case 'METRO 9': return { color: '#B6BD00', weight: 4, opacity: 1 };
+								case 'METRO 10': return { color: '#C9910D', weight: 4, opacity: 1 };
+								case 'METRO 11': return { color: '#704B1C', weight: 4, opacity: 1 };
+								case 'METRO 12': return { color: '#007852', weight: 4, opacity: 1 };
+								case 'METRO 13': return { color: '#6EC4E8', weight: 4, opacity: 1 };
+								case 'METRO 14': return { color: '#62259D', weight: 4, opacity: 1 };
+								case 'METRO 7b': return { color: '#6ECA97', weight: 4, opacity: 1 };
+								case 'METRO 3b': return { color: '#6EC4E8', weight: 4, opacity: 1 };
+                default: return { color: '#3388ff', weight: 4, opacity: 1 }; // fallback
               }
             }}
           />
         )}
         {uniqueStops.map(stop => {
           const lines = stop.route_names.split(',');
-          const colors = stop.route_colors.split(',');
-          const textColors = stop.route_text_colors.split(',');
+          const colors = stop.route_colors.split(',')
+					.map(color => color.startsWith('#') ? color : `#${color}`);
+          const textColors = stop.route_text_colors.split(',')
+					.map(color => color.startsWith('#') ? color : `#${color}`);
+          const mainColor = colors[0] || '#3388ff'; // Default color is blue if no color is specified
+					console.log('Stop:', stop, 'Lines:', lines, 'Colors:', colors, 'Text Colors:', textColors);
           return (
-            <Marker
-              key={stop.stop_id}
-              position={[stop.latitude, stop.longitude]}
-              icon={getStopIcon(colors[0])} // Use the first line color or any color you want
-            >
-              <Popup>
-                <b>{stop.name}</b>
-                <br />
-                Lines:
-                <ul style={{margin: 0, paddingLeft: 16}}>
-                  {lines.map((line, i) => (
-                    <li key={line}>
-                      <span
-                        style={{
-                          background: colors[i] || '#ccc',
-                          color: textColors[i] || '#000',
-                          padding: '2px 6px',
-                          borderRadius: 4,
-                          marginRight: 4,
-                          fontWeight: 600,
-                          display: 'inline-block'
-                        }}
-                      >
-                        {line}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </Popup>
-            </Marker>
+            <React.Fragment key={stop.stop_id}>
+              <CircleMarker
+                center={[stop.latitude, stop.longitude]}
+                radius={8}
+                pathOptions={{
+                  color: mainColor,        // border color
+                  fillColor: mainColor,    // fill color
+                  fillOpacity: 0.5,
+                }}
+              />
+              <Marker
+                position={[stop.latitude, stop.longitude]}
+                icon={getStopIcon(mainColor)}
+              >
+                <Popup>
+                  <b>{stop.name}</b>
+                  <br />
+                  Lines:
+                  <ul style={{margin: 0, paddingLeft: 16}}>
+                    {lines.map((line, i) => (
+                      <li key={line}>
+                        <span
+                          style={{
+                            background: colors[i] || '#ccc',
+                            color: textColors[i] || '#000',
+                            padding: '2px 6px',
+                            borderRadius: 4,
+                            marginRight: 4,
+                            fontWeight: 600,
+                            display: 'inline-block'
+                          }}
+                        >
+                          {line}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </Popup>
+              </Marker>
+            </React.Fragment>
           );
         })}
       </MapContainer>
