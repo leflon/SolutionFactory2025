@@ -24,13 +24,14 @@ const TrafficInfoPagination = ({
 	currentIncident,
 	setCurrentIncident
 }: TrafficInfoPaginationProps) => {
+	const DEFAULT_ANIMATION_DURATION = 10_000;
+	const LONG_ANIMATION_DURATION = 20_000;
 	// Represents the progress of the current page indicator animation.
 	const [animationState, setAnimationState] = useState(0);
 	// Represents the current timeframe of the whole animation helper
 	const globalAnimationTiming = useRef(0);
 	// Represents how long the currently selected page will stay selected before the next one.
-	// For automatic pagination, that is 5000ms. If the user selects one manually, it switches to 10,000ms.
-	const animationDuration = useRef(5000);
+	const animationDuration = useRef(DEFAULT_ANIMATION_DURATION);
 	// Represents the timestamp of the beginning of the current animation.
 	const animationStartTime = useRef<number>(null);
 
@@ -43,7 +44,7 @@ const TrafficInfoPagination = ({
 		// Reset the animation, and make it longer to let the user read more comfortably.
 		setAnimationState(0);
 		animationStartTime.current = globalAnimationTiming.current;
-		animationDuration.current = 10_000;
+		animationDuration.current = LONG_ANIMATION_DURATION;
 	};
 
 	const animate = (timing?: DOMHighResTimeStamp) => {
@@ -64,7 +65,8 @@ const TrafficInfoPagination = ({
 			setAnimationState(0);
 			// If the previous incident was user-selected, the animation was slower.
 			// We go back to normal speed.
-			if (animationDuration.current !== 5000) animationDuration.current = 5000;
+			if (animationDuration.current !== DEFAULT_ANIMATION_DURATION)
+				animationDuration.current = DEFAULT_ANIMATION_DURATION;
 		} else setAnimationState(progress);
 
 		requestAnimationFrame(animate);
