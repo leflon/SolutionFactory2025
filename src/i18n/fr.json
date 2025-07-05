@@ -1,4 +1,4 @@
-{
+
 	"ItinerarySelector": {
 		"title": "Votre itinéraire",
 		"departure": "Point de départ",
@@ -12,5 +12,8 @@
 			"one": "{{count}} arrêt",
 			"other": "{{count}} arrêts"
 		}
+	},
+	"Map": {
+		"lines": "Lignes:"
 	}
 }

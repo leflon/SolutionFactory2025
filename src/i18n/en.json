@@ -12,5 +12,8 @@
 			"one": "{{count}} stop",
 			"other": "{{count}} stops"
 		}
+	},
+	"Map": {
+		"lines": "Lines:"
 	}
 }
