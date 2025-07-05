@@ -131,15 +131,19 @@ type TrafficInfoProps = {
 	lastUpdate: Date;
 	/** Filters incidents to display only those associated with this line Id */
 	lineFilter?: string;
+	/** Whether the element can be shrunk by the user, leaving only the line icon displayed. (Default: true) */
+	shrinkable?: boolean;
 };
 
 const TrafficInfo = ({
 	incidents,
 	lastUpdate,
-	lineFilter
+	lineFilter,
+	shrinkable
 }: TrafficInfoProps) => {
 	const [currentIncident, setCurrentIncident] = useState(0);
 	const [isShrunk, setIsShrunk] = useState(false);
+	shrinkable ??= true;
 
 	const sortedIncidents = useMemo(() => {
 		return incidents
@@ -181,20 +185,25 @@ const TrafficInfo = ({
 	return (
 		<div
 			className={
-				`box-border relative bg-white rounded-2xl border-[1px] border-gray-300
+				`box-border relative bg-white rounded-2xl border-[1px] border-gray-300 text-left
 			flex items-center gap-3 overflow-hidden group ` +
 				(isShrunk
-					? 'rounded-full size-18 justify-center self-end'
+					? 'cursor-pointer rounded-full size-18 justify-center self-end hover:scale-110 transition-transform'
 					: 'h-22 pl-3 w-full')
 			}
+			onClick={() => isShrunk && setIsShrunk(false)}
+			onKeyDown={(e) =>
+				isShrunk && (e.key === 'Enter' || e.key === ' ') && setIsShrunk(false)
+			}
+			tabIndex={isShrunk ? 0 : -1}
 		>
-			<div
-				className='z-50 absolute top-1 right-1 group-hover:opacity-100 opacity-0 cursor-pointer'
-				hidden={isShrunk}
+			<button
+				className='z-50 absolute top-1 right-1 group-hover:opacity-100 opacity-0 cursor-pointer focus:opacity-100 rounded-full'
+				hidden={isShrunk || !shrinkable}
 				onClick={() => setIsShrunk(true)}
 			>
 				<MdClose size={24}></MdClose>
-			</div>
+			</button>
 			<div
 				className={
 					'absolute italic text-xs bottom-0 right-5 text-gray-300 ' +
@@ -210,11 +219,7 @@ const TrafficInfo = ({
 			</div>
 			<div
 				key={'img' + currentIncident}
-				className={
-					'shrink-0 animate-[fadeIn_1s_ease] relative ' +
-					(isShrunk ? 'cursor-pointer' : '')
-				}
-				onClick={() => setIsShrunk(false)}
+				className={'shrink-0 animate-[fadeIn_1s_ease] relative'}
 			>
 				<Image
 					src={`/metros/${sortedIncidents[currentIncident].line.name}.png`}

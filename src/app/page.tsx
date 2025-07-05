@@ -36,7 +36,7 @@ export default function Home() {
 			<ItinerarySelector onRequest={handleItineraryRequest} />
 			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
 			<div className='fixed bottom-5 w-full flex justify-center'>
-				<div className='w-1/2 flex justify-end'>
+				<div className='w-8/12 h-22 flex justify-end items-center'>
 					{trafficInfo && <TrafficInfo {...trafficInfo} />}
 				</div>
 			</div>
