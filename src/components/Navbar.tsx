@@ -17,7 +17,7 @@ export default function Navbar() {
 	}, [darkMode]);
 
 	return (
-		<nav className='flex justify-between items-center px-6 py-4 bg-white dark:bg-gray-900 shadow-md relative'>
+		<nav className='fixed z-50 w-full top-0 flex justify-between items-center px-6 py-4 bg-white dark:bg-gray-900 shadow-md'>
 			<div className='text-lg font-bold text-gray-800 dark:text-white'>
 				🚆 MEDOC
 			</div>

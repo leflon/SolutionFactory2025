@@ -97,12 +97,12 @@ export default function InteractiveMap({
 	const currentRadius = calculateRadius(currentZoom);
 
 	return (
-		<div className='map-wrapper'>
+		<div className='relative h-full z-0'>
 			<MapContainer
 				center={DEFAULT_CENTER}
 				zoom={BASE_ZOOM_LEVEL}
 				zoomControl={false}
-				style={{ height: '100%', width: '100%', zIndex: 0 }}
+				style={{ zIndex: -500, width: '100%', height: '100%' }}
 			>
 				<ZoomControl position='bottomright' />
 				<ZoomHandler />

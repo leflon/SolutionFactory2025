@@ -3,7 +3,7 @@
 import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
-import Map from '@/components/Map';
+import InteractiveMap from '@/components/InteractiveMap';
 import dynamic from 'next/dynamic';
 import { t } from '@/lib/i18n';
 import { PLACEHOLDER_ITINERARY } from '@/lib/Itinerary';
@@ -17,10 +17,14 @@ export default function Home() {
 	};
 
 	return (
-		<div>
-			<Map onDepartureSelected={alert} onArrivalSelected={alert} />
+		<>
+			<Navbar />
 			<ItinerarySelector onRequest={handleItineraryRequest} />
 			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
-		</div>
+			<InteractiveMap
+				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
+				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
+			/>
+		</>
 	);
 }

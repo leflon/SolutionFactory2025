@@ -32,7 +32,6 @@ body {
 
 /*#region ItineraryBreakdown */
 .has-stop-indicator {
-
 	@apply relative before:absolute before:size-[14px] before:left-[-20px] before:top-[1px] before:rounded-full before:bg-white before:border-2 dark:before:border-black;
 
 	&.small-indicator {
@@ -79,17 +78,4 @@ body {
 		overflow: visible;
 	}
 }
-
-/*test debugging map tiles
-#__next {
-  height: 100%;
-}*/
 /*#endregion*/
-
-.map-wrapper,
-.map-wrapper .leaflet-container {
-  width: 100%;
-  height: 680px !important;
-  min-height: 400px;
-  position: relative;
-}
