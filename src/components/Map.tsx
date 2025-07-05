@@ -178,7 +178,7 @@ export default function InteractiveMap({
 											<span className='!w-px h-3 bg-black !p-0 pointer-events-none'></span>
 											<button
 												onClick={() =>
-													onDepartureSelected && onArrivalSelected(stop.stop_id)
+													onArrivalSelected && onArrivalSelected(stop.stop_id)
 												}
 											>
 												<BsBoxArrowInRight />
