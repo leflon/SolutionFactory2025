@@ -234,15 +234,13 @@ async function computeIntersections() {
     transferStops.add(from);
     transferStops.add();
   })
-  console.log("Here" ,transferDict["IDFM:463079"])
 
   const stopRoutes = await db.all(`
     SELECT DISTINCT stop_id, Trips.route_id
     FROM StopTimes
     JOIN Trips
     ON StopTimes.trip_id = Trips.trip_id
-    WHERE stop_id IN (${[...transferStops].map(() => '?').join(',')})
-  `, [...transferStops]);
+  `);
 
   const stopRouteDict = {}
   const routeOfStopDict = {}
@@ -255,9 +253,136 @@ async function computeIntersections() {
     }
     stopRouteDict[route].push(stop)
   })
-  console.log("there",stopRouteDict['IDFM:C01371'][0], stopRouteDict['IDFM:C01371'][1])
-  return 
+
+  const stopNames= await db.all(`
+      SELECT stop_id, plain_name
+      FROM Stops
+      `)
+  const stopNamesDict = {}
+  stopNames.forEach(row => {
+    const stop = row.stop_id
+    const name = row.plain_name
+    stopNamesDict[stop] = name
+  })
+
+  return [transferDict, stopRouteDict, routeOfStopDict, stopNamesDict]
+}
+
+function dijkstra(start, stop){
+    const dicts = computeIntersections()
+    const transferDict = dicts[0]
+    const stopRouteDict = dicts[1]
+    const routeOfStopDict = dicts[2]
+
+
 }
 
 
-computeIntersections();
+async function findMinTransfers(startStop, endStop, maxResults = 3) {
+    const dicts = await computeIntersections()
+    const transferDict = dicts[0]
+    const stopRouteDict = dicts[1]
+    const routeOfStopDict = dicts[2]
+    const stopNamesDict = dicts[3]
+
+    const startRoutes = Array.isArray(routeOfStopDict[startStop])
+    ? routeOfStopDict[startStop]
+    : [routeOfStopDict[startStop]];
+
+  const endRoutes = new Set(
+    Array.isArray(routeOfStopDict[endStop])
+      ? routeOfStopDict[endStop]
+      : [routeOfStopDict[endStop]]
+  );
+
+  if (!startRoutes[0] || endRoutes.size === 0) return [];
+
+  const results = [];
+  const seenPaths = new Set(); // Pour filtrer les doublons
+  const queue = [];
+
+  for (const route of startRoutes) {
+    const initialPath = [{ route, via: startStop }];
+    const key = pathKey(initialPath, stopNamesDict);
+    seenPaths.add(key);
+
+    queue.push({
+      route,
+      transfers: 0,
+      path: initialPath,
+      visitedRoutes: new Set([route])
+    });
+  }
+
+  while (queue.length > 0 && results.length < maxResults) {
+    const {
+      route: currentRoute,
+      transfers,
+      path,
+      visitedRoutes
+    } = queue.shift();
+
+    const stops = stopRouteDict[currentRoute] || [];
+
+    for (const stop of stops) {
+      const transferStops = transferDict[stop] || [];
+
+      for (const transferStop of transferStops) {
+
+        const nextRoutesRaw = routeOfStopDict[transferStop];
+        const nextRoutes = Array.isArray(nextRoutesRaw)
+          ? nextRoutesRaw
+          : [nextRoutesRaw];
+
+        for (const nextRoute of nextRoutes) {
+          if (!nextRoute || visitedRoutes.has(nextRoute)) continue;
+
+          const newVisited = new Set(visitedRoutes);
+          newVisited.add(nextRoute);
+
+          const newPath = [...path, { route: nextRoute, via: transferStop }];
+          const key = pathKey(newPath, stopNamesDict);
+
+          if (seenPaths.has(key)) continue;
+          seenPaths.add(key);
+
+          if (endRoutes.has(nextRoute)) {
+            results.push({
+              transfers: transfers + 1,
+              path: newPath
+            });
+
+            if (results.length >= maxResults) break;
+          } else {
+            queue.push({
+              route: nextRoute,
+              transfers: transfers + 1,
+              path: newPath,
+              visitedRoutes: newVisited
+            });
+          }
+        }
+
+        if (results.length >= maxResults) break;
+      }
+
+      if (results.length >= maxResults) break;
+    }
+
+  }
+
+  return results;
+}
+
+// Génère une clé unique à partir d'un chemin
+function pathKey(path, stopNamesDict) {
+  return path.map(step => `${step.route}-${stopNamesDict[step.via]})}`).join(" > ");
+}
+
+//findMinTransfers("IDFM:463197", "IDFM:463323", 5).then(res => console.log(res?.path.forEach(line => console.log(line))))
+
+findMinTransfers("IDFM:463193", "IDFM:463323", 10).then(res => res.forEach(itin => { 
+    console.log(itin)
+    itin.path.forEach( path => console.log(path)) 
+    console.log("----------NEXT--------")
+}))
