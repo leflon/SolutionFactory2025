@@ -2,7 +2,7 @@ import db from '@/lib/db';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const stmt = db.prepare(`
+	const stmt = db.prepare(`
 		SELECT
 			s.stop_id,
 			s.name,
@@ -19,21 +19,22 @@ export async function GET(req: NextRequest) {
 			GROUP BY s.name
 `);
 
-  const rows = stmt.all() as {
-    stop_id: string;
-    name: string;
-    latitude: number;
-    longitude: number;
-    route_names: string;
+	const rows = stmt.all() as {
+		stop_id: string;
+		name: string;
+		latitude: number;
+		longitude: number;
+		route_names: string;
 		route_colors: string;
 		route_text_colors: string;
-  }[];
+	}[];
 
-  rows.forEach(row => {
-    row.route_names = row.route_names || '';
-    row.route_colors = row.route_colors || '';
-    row.route_text_colors = row.route_text_colors || '';
-  });
-
-  return Response.json({ stops: rows });
+	return Response.json({
+		stops: rows.map((row) => ({
+			...row,
+			route_names: row.route_names.split(','),
+			route_colors: row.route_colors.split(','),
+			route_text_colors: row.route_text_colors.split(','),
+		})),
+	});
 }
