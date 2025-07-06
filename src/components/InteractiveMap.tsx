@@ -6,11 +6,13 @@ import {
 	CircleMarker,
 	GeoJSON,
 	MapContainer,
+	Polyline,
 	Popup,
 	TileLayer,
 	useMapEvents,
-	ZoomControl,
+	ZoomControl
 } from 'react-leaflet';
+import { MetroNetwork } from '@/lib/types';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 
@@ -25,13 +27,15 @@ type Stop = {
 };
 
 type InteractiveMapProps = {
+	minimumSpanningTree?: MetroNetwork;
 	onDepartureSelected?: (stopId: string) => any;
 	onArrivalSelected?: (stopId: string) => any;
 };
 
 export default function InteractiveMap({
+	minimumSpanningTree,
 	onDepartureSelected,
-	onArrivalSelected,
+	onArrivalSelected
 }: InteractiveMapProps) {
 	const BASE_ZOOM_LEVEL = 12;
 	const [routePaths, setRoutePaths] = useState<any>(null);
@@ -89,13 +93,72 @@ export default function InteractiveMap({
 		useMapEvents({
 			zoomend: (e) => {
 				setCurrentZoom(e.target.getZoom());
-			},
+			}
 		});
 		return null;
 	};
 
 	const currentRadius = calculateRadius(currentZoom);
-
+	if (minimumSpanningTree) {
+		return (
+			<div className='relative h-full z-0'>
+				<MapContainer
+					center={DEFAULT_CENTER}
+					zoom={BASE_ZOOM_LEVEL}
+					zoomControl={false}
+					style={{ zIndex: -500, width: '100%', height: '100%' }}
+				>
+					<ZoomControl position='bottomright' />
+					<ZoomHandler />
+					<TileLayer
+						url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+						attribution='&copy; OpenStreetMap contributors | &copy; IDFM'
+					/>
+					{Object.values(minimumSpanningTree.nodes).map((stop) => (
+						<CircleMarker
+							key={stop.id}
+							center={[stop.longitude, stop.latitude]}
+							radius={5}
+							pathOptions={{
+								color: '#' + stop.line.color,
+								fillColor: '#' + stop.line.color,
+								fillOpacity: 1
+							}}
+						>
+							<Popup>
+								<h1>{stop.id}</h1>
+								<h2>{stop.name}</h2>
+							</Popup>
+						</CircleMarker>
+					))}
+					{Object.values(minimumSpanningTree.edges).map((edges) =>
+						edges.map((edge) => {
+							const from = minimumSpanningTree.nodes[edge.fromId];
+							const to = minimumSpanningTree.nodes[edge.toId];
+							if (!from || !to) return <></>;
+							return (
+								<Polyline
+									key={from.id + to.id}
+									positions={[
+										[from.longitude, from.latitude],
+										[to.longitude, to.latitude]
+									]}
+									pathOptions={{
+										color: edge.isTransfer ? '#000;' : '#' + from.line.color
+									}}
+								>
+									<Popup>
+										<div>Duration: {edge.duration}s</div>
+										<div>Transfer: {String(edge.isTransfer)}</div>
+									</Popup>
+								</Polyline>
+							);
+						})
+					)}
+				</MapContainer>
+			</div>
+		);
+	}
 	return (
 		<div className='relative h-full z-0'>
 			<MapContainer
@@ -116,7 +179,7 @@ export default function InteractiveMap({
 						style={(feature) => ({
 							weight: 2 + currentRadius / 2,
 							color: '#' + feature!.properties.colourweb_hexa,
-							lineJoin: 'round',
+							lineJoin: 'round'
 						})}
 					/>
 				)}
@@ -124,10 +187,10 @@ export default function InteractiveMap({
 					uniqueStops.map((stop) => {
 						const lines = stop.route_names;
 						const colors = stop.route_colors.map((color) =>
-							color.startsWith('#') ? color : `#${color}`,
+							color.startsWith('#') ? color : `#${color}`
 						);
 						const textColors = stop.route_text_colors.map((color) =>
-							color.startsWith('#') ? color : `#${color}`,
+							color.startsWith('#') ? color : `#${color}`
 						);
 						const mainColor = colors[0] || '#3388ff';
 						const isMultipleRoutes = stop.route_names.length > 1;
@@ -141,7 +204,7 @@ export default function InteractiveMap({
 										color: isMultipleRoutes ? '#000' : mainColor, // border color
 										weight: currentRadius / 3,
 										fillColor: isMultipleRoutes ? '#fff' : mainColor, // fill color
-										fillOpacity: 1,
+										fillOpacity: 1
 									}}
 								>
 									<Popup className='relative'>

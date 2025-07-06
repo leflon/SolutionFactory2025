@@ -65,6 +65,7 @@ export interface MetroNetworkEdge {
 	fromId: string;
 	toId: string; // L'identifiant de la station de destination
 	duration: number; // Le poids de l'arête (temps de parcours en secondes)
+	isTransfer: boolean;
 }
 
 /**

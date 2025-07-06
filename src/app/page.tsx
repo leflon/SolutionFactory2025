@@ -1,14 +1,16 @@
 'use client';
 
+import InteractiveMap from '@/components/InteractiveMap';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import { ItineraryEndpoints, MetroNetwork } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-	const [network, setNetwork] = useState<MetroNetwork | null>(null);
+	const [network, setNetwork] = useState<MetroNetwork | undefined>(undefined);
 
 	useEffect(() => {
+		console.log('NETWOOOORK');
 		fetch('/api/network')
 			.then((res) => res.json())
 			.then(setNetwork);
@@ -23,9 +25,8 @@ export default function Home() {
 		<>
 			<Navbar />
 			<ItinerarySelector onRequest={handleItineraryRequest} />
-		</div>
-			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
 			<InteractiveMap
+				minimumSpanningTree={network}
 				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
 				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
 			/>
