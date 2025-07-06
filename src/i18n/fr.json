@@ -1,4 +1,4 @@
-{
+
 	"ItinerarySelector": {
 		"title": "Votre itinéraire",
 		"departure": "Point de départ",
@@ -15,5 +15,7 @@
 	},
 	"TrafficInfo": {
 		"lastUpdate": "Dernière mise à jour: {{time}}"
+	"Map": {
+		"lines": "Lignes:"
 	}
 }

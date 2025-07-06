@@ -16,6 +16,11 @@ const AVAILABLE_DATASETS = [
 let importDatasets = [];
 let excludeDatasets = [];
 
+//Test for SQL query for fetching stops
+const query = db.prepare(`SELECT stop_id, name, latitude, longitude FROM Stops`);
+const rows = query.all();
+console.log(rows);
+
 const importArgIndex = process.argv.indexOf('--import');
 const excludeArgIndex = process.argv.indexOf('--exclude');
 
@@ -255,3 +260,4 @@ if (datasetsToImport.includes('transfers')) {
 }
 
 //#endregion
+

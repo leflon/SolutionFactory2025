@@ -1,6 +1,7 @@
 import { LanguageProvider } from '@/components/LanguageProvider';
 import '@/styles/main.css';
 import type { Metadata } from 'next';
+import Chatbot from '@/components/Chatbot';
 
 export const metadata: Metadata = {
 	title: 'Metro Efrei Dodo',
@@ -14,8 +15,9 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang='fr' className='bg-gray-150 dark:bg-gray-800'>
-			<body>
+			<body className='w-screen h-screen'>
 				<LanguageProvider>{children}</LanguageProvider>
+				<Chatbot />
 			</body>
 		</html>
 	);

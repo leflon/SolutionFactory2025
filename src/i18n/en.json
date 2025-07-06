@@ -15,5 +15,7 @@
 	},
 	"TrafficInfo": {
 		"lastUpdate": "Last update: {{time}}"
+	"Map": {
+		"lines": "Lines:"
 	}
 }

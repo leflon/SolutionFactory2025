@@ -4,6 +4,8 @@ import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import TrafficInfo from '@/components/TrafficInfo';
+import InteractiveMap from '@/components/InteractiveMap';
+import dynamic from 'next/dynamic';
 import { t } from '@/lib/i18n';
 import { PLACEHOLDER_ITINERARY } from '@/lib/Itinerary';
 import { Incident, ItineraryEndpoints } from '@/lib/types';
@@ -17,7 +19,7 @@ export default function Home() {
 
 	const handleItineraryRequest = (endpoints: ItineraryEndpoints) => {
 		console.log('Request: ', endpoints);
-		// TODO: Implement
+		// TODO: Implement API call to fetch itinerary based on endpoints
 	};
 
 	const fetchIncidents = async () => {
@@ -31,7 +33,7 @@ export default function Home() {
 	useEffect(() => void fetchIncidents(), []); // Fetch incidents automatically only once, on component mount.
 
 	return (
-		<div>
+		<>
 			<Navbar />
 			<ItinerarySelector onRequest={handleItineraryRequest} />
 			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
@@ -41,5 +43,10 @@ export default function Home() {
 				</div>
 			</div>
 		</div>
+			<InteractiveMap
+				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
+				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
+			/>
+		</>
 	);
 }
