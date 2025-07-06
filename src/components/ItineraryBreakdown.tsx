@@ -6,14 +6,14 @@ import {
 	getTotalStops,
 	getTotalWalkingDuration,
 	Itinerary,
-	ItinerarySegment,
+	ItinerarySegment
 } from '@/lib/Itinerary';
 import {
 	MdDirectionsWalk,
 	MdKeyboardArrowDown,
 	MdKeyboardArrowRight,
 	MdSchedule,
-	MdLocationPin,
+	MdLocationPin
 } from 'react-icons/md';
 import Image from 'next/image';
 import { Fragment, useState } from 'react';
@@ -53,8 +53,8 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 				<span
 					dangerouslySetInnerHTML={{
 						__html: t('ItineraryBreakdown.direction', {
-							direction: segment.direction,
-						}),
+							direction: segment.direction
+						})
 					}}
 				></span>
 				<MetroLineInfo
@@ -137,13 +137,13 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 				<div>
 					<MdSchedule size={18} />
 					{t('ItineraryBreakdown.duration', {
-						duration: Math.ceil(getTotalDuration(itinerary) / 60),
+						duration: Math.ceil(getTotalDuration(itinerary) / 60)
 					})}
 				</div>
 				<div>
 					<MdDirectionsWalk size={18} />
 					{t('ItineraryBreakdown.duration', {
-						duration: Math.ceil(getTotalWalkingDuration(itinerary) / 60),
+						duration: Math.ceil(getTotalWalkingDuration(itinerary) / 60)
 					})}
 				</div>
 				<div>
