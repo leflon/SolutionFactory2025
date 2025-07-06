@@ -42,7 +42,6 @@ export default function Home() {
 					{trafficInfo && <TrafficInfo {...trafficInfo} />}
 				</div>
 			</div>
-		</div>
 			<InteractiveMap
 				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
 				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
