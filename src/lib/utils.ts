@@ -11,3 +11,8 @@ export function normalizeString(str: string) {
 		.replace(/[^a-zA-Z0-9]/g, '') // Remove all non-alphanumeric characters
 		.toLowerCase();
 }
+
+export function timeStringToSeconds(timeString: string): number {
+	const [hours, minutes, seconds] = timeString.split(':').map((s) => +s);
+	return hours * 3600 + minutes * 60 + seconds;
+}
