@@ -35,23 +35,41 @@ export interface Itinerary {
 export function getSegmentDurationInMinutes(segment: ItinerarySegment): number {
 	// Rounding up to the nearest minute, we rather have a longer duration than a shorter one
 	// It avoids underestimating the time needed for an itinerary.
-	return Math.ceil(segment.stops.reduce((acc, stop) => acc + stop.duration, 0) / 60);
+	return Math.ceil(
+		segment.stops.reduce((acc, stop) => acc + stop.duration, 0) / 60
+	);
 }
 
 export function getTotalDuration(itinerary: Itinerary): number {
-	return itinerary.segments.reduce((acc, segment) => acc + segment.stops.reduce((acc, stop) => acc + stop.duration, 0) + (segment.connectingDuration ?? 0), 0);
+	return itinerary.segments.reduce(
+		(acc, segment) =>
+			acc +
+			segment.stops.reduce((acc, stop) => acc + stop.duration, 0) +
+			(segment.connectingDuration ?? 0),
+		0
+	);
 }
 
 export function getTotalDistance(itinerary: Itinerary): number {
-	return itinerary.segments.reduce((acc, segment) => acc + segment.stops.reduce((acc, stop) => acc + stop.distance, 0), 0);
+	return itinerary.segments.reduce(
+		(acc, segment) =>
+			acc + segment.stops.reduce((acc, stop) => acc + stop.distance, 0),
+		0
+	);
 }
 
 export function getTotalWalkingDuration(itinerary: Itinerary): number {
-	return itinerary.segments.reduce((acc, segment) => acc + (segment.connectingDuration ?? 0), 0);
+	return itinerary.segments.reduce(
+		(acc, segment) => acc + (segment.connectingDuration ?? 0),
+		0
+	);
 }
 
 export function getTotalStops(itinerary: Itinerary): number {
-	return itinerary.segments.reduce((acc, segment) => acc + segment.stops.length, 0);
+	return itinerary.segments.reduce(
+		(acc, segment) => acc + segment.stops.length,
+		0
+	);
 }
 
 export function getTotalTransfers(itinerary: Itinerary): number {
@@ -96,7 +114,7 @@ export const PLACEHOLDER_ITINERARY: Itinerary = {
 			],
 			line: '6',
 			lineColor: '#6ECA97',
-			direction: 'Nation',
+			direction: 'Nation'
 		},
 		{
 			line: '7',
@@ -106,7 +124,7 @@ export const PLACEHOLDER_ITINERARY: Itinerary = {
 			stops: [
 				{
 					id: 'stop6',
-					name: 'Place d\'Italie',
+					name: "Place d'Italie",
 					distance: 0,
 					duration: 0
 				},
