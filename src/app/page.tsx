@@ -37,8 +37,8 @@ export default function Home() {
 			<Navbar />
 			<ItinerarySelector onRequest={handleItineraryRequest} />
 			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
-			<div className='fixed bottom-5 w-full flex justify-center'>
-				<div className='w-8/12 h-22 flex justify-end items-center'>
+			<div className='z-50 fixed bottom-5 w-full flex justify-center'>
+				<div className='w-7/12 h-22 flex justify-end items-center drop-shadow-lg'>
 					{trafficInfo && <TrafficInfo {...trafficInfo} />}
 				</div>
 			</div>
