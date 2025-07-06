@@ -1,5 +1,5 @@
 import 'leaflet/dist/leaflet.css';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { BsBoxArrowInRight, BsBoxArrowRight } from 'react-icons/bs';
 import {
@@ -27,16 +27,21 @@ type Stop = {
 type InteractiveMapProps = {
 	onDepartureSelected?: (stopId: string) => any;
 	onArrivalSelected?: (stopId: string) => any;
+	stationToZoom?: string | null;
+	onZoomEnd?: () => void;
 };
 
 export default function InteractiveMap({
 	onDepartureSelected,
 	onArrivalSelected,
+	stationToZoom,
+	onZoomEnd
 }: InteractiveMapProps) {
 	const BASE_ZOOM_LEVEL = 12;
 	const [routePaths, setRoutePaths] = useState<any>(null);
 	const [stops, setStops] = useState<Stop[]>([]);
 	const [currentZoom, setCurrentZoom] = useState(12);
+	const mapRef = useRef<L.Map | null>(null);
 
 	// Load GeoJSON on mount
 	useEffect(() => {
@@ -67,6 +72,22 @@ export default function InteractiveMap({
 		}
 	}
 	const uniqueStops = Array.from(stopsById.values());
+
+	useEffect(() => {
+		if (stationToZoom && mapRef.current) {
+			const stop = uniqueStops.find(s => s.name === stationToZoom);
+			if (stop) {
+				mapRef.current.setView([stop.latitude, stop.longitude], 16, { animate: true });
+			}
+		}
+	}, [stationToZoom, uniqueStops]);
+
+	useEffect(() => {
+		if (stationToZoom && mapRef.current) {
+			// ...zoom...
+			onZoomEnd?.();
+		}
+	}, [stationToZoom, uniqueStops]);
 
 	// Calculate radius based on zoom level
 	const calculateRadius = useCallback((zoom: number) => {
@@ -103,6 +124,7 @@ export default function InteractiveMap({
 				zoom={BASE_ZOOM_LEVEL}
 				zoomControl={false}
 				style={{ zIndex: -500, width: '100%', height: '100%' }}
+				ref={mapRef}
 			>
 				<ZoomControl position='bottomright' />
 				<ZoomHandler />

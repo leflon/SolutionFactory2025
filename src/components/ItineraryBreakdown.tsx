@@ -17,9 +17,11 @@ import {
 } from 'react-icons/md';
 import Image from 'next/image';
 import { Fragment, useState } from 'react';
+import MetroLineInfo from '@/components/LineInformation';
 import { t } from '@/lib/i18n';
 type ItineraryBreakdownPartProps = {
 	segment: ItinerarySegment;
+	onStationClick?: (stationName: string) => void;
 };
 
 // Allows us to inject CSS variables directly from the component template, to style the small stop indicators border color.
@@ -28,7 +30,7 @@ declare module 'react' {
 		'--border-color'?: string;
 	}
 }
-const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
+const ItineraryBreakdownPart = ({ segment, onStationClick }: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -56,6 +58,10 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 						})
 					}}
 				></span>
+				<MetroLineInfo
+				lineName={`${segment.line}`}
+				onStationClick={onStationClick}
+				/>
 			</div>
 			<div
 				className='flex flex-row items-center cursor-pointer'
@@ -92,8 +98,9 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 
 type ItineraryBreakdownProps = {
 	itinerary: Itinerary;
+	onStationClick?: (stationId: string) => void;
 };
-const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
+const ItineraryBreakdown = ({ itinerary, onStationClick }: ItineraryBreakdownProps) => {
 	return (
 		<div className='fixed bottom-10 left-5 h-1/2 w-60 bg-white dark:bg-gray-700 shadow-lg rounded-lg p-4 overflow-y-auto z-50 dark:text-white border-[1px] border-gray-300 dark:border-gray-600'>
 			<div
@@ -159,7 +166,7 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 							</span>
 						</div>
 					)}
-					<ItineraryBreakdownPart segment={segment} />
+					<ItineraryBreakdownPart segment={segment} onStationClick={onStationClick} />
 				</div>
 			))}
 		</div>
