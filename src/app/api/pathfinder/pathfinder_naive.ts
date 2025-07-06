@@ -21,6 +21,14 @@ function addSecondsToTime(timeStr, secondsToAdd) {
   return `${pad(newHours)}:${pad(newMinutes)}:${pad(newSeconds)}`;
 }
 
+function getTimeDifferenceInSeconds(timeA, timeB) {
+  const toSeconds = (timeStr) => {
+    const [h, m, s] = timeStr.split(":").map(Number);
+    return h * 3600 + m * 60 + s;
+  };
+
+  return toSeconds(timeA) - toSeconds(timeB);
+}
 
 async function computeIntersections(db) {
 
@@ -46,14 +54,17 @@ async function computeIntersections(db) {
   })
 
   const stopRoutes = await db.all(`
-    SELECT DISTINCT stop_id, Trips.route_id
+    SELECT DISTINCT stop_id, Trips.route_id, Routes.background_color
     FROM StopTimes
     JOIN Trips
     ON StopTimes.trip_id = Trips.trip_id
+    JOIN Routes
+    ON Trips.route_id = Routes.route_id
   `);
 
   const stopRouteDict = {}
   const routeOfStopDict = {}
+  const colorOfRoute = {}
   stopRoutes.forEach(row =>{
     const route = row.route_id
     const stop = row.stop_id
@@ -61,6 +72,7 @@ async function computeIntersections(db) {
     if(!stopRouteDict[route]){
         stopRouteDict[route] = []
     }
+    colorOfRoute[route] = row.background_color
     stopRouteDict[route].push(stop)
   })
 
@@ -75,7 +87,7 @@ async function computeIntersections(db) {
     stopNamesDict[stop] = name
   })
 
-  return [transferDict, stopRouteDict, routeOfStopDict, stopNamesDict, transferTimeDict]
+  return [transferDict, stopRouteDict, routeOfStopDict, stopNamesDict, transferTimeDict, colorOfRoute]
 }
 
 
@@ -187,6 +199,7 @@ async function fastestPath(path, dicts, endStop, startTime, db){
     const routeOfStopDict = dicts[2]
     const stopNamesDict = dicts[3]
     const transferTimeDict = dicts[4]
+    const colorOfRouteDict = dicts[5]
 
     
 
@@ -198,62 +211,74 @@ async function fastestPath(path, dicts, endStop, startTime, db){
         console.log('Path n°', i+1)
         console.log("-------------------------------------------------------")
 
+        const Itinerary = {
+          segments: [],
+          requestedDeparturTime: startTime,
+          requestedArrivalTime: NaN
+        }
+
         for (let j = 0; j < currentPath.path.length; j++){
-            const segment = currentPath.path[j]
-            var targetStop;
-            if ( j+1 < currentPath.path.length){
-                targetStop = currentPath.path[j+1].from
-            } else{
-                targetStop = endStop
-            }
+
+          const segment = currentPath.path[j]
+          var targetStop;
+          if ( j+1 < currentPath.path.length){
+              targetStop = currentPath.path[j+1].from
+          } else{
+              targetStop = endStop
+          }
             
             
             
-            var viaOtherWay;
-            transferDict[segment.via].forEach(
-                transfer =>{
-                    if (routeOfStopDict[transfer] == routeOfStopDict[segment.via]){
-                        viaOtherWay = transfer
-                    }
-                }  
-            )
+          var viaOtherWay;
+          transferDict[segment.via].forEach(
+              transfer =>{
+                  if (routeOfStopDict[transfer] == routeOfStopDict[segment.via]){
+                      viaOtherWay = transfer
+                  }
+              }  
+          )
 
-            var targetOtherWay;
-            transferDict[targetStop].forEach(
-                transfer =>{
-                    if (routeOfStopDict[transfer] == routeOfStopDict[segment.via]){
-                        targetOtherWay = transfer
-                    }
-                }  
-            )
+          var targetOtherWay;
+          transferDict[targetStop].forEach(
+              transfer =>{
+                  if (routeOfStopDict[transfer] == routeOfStopDict[segment.via]){
+                      targetOtherWay = transfer
+                  }
+              }  
+          )
 
-            console.log(segment.via, viaOtherWay)
-            console.log(targetStop, targetOtherWay)
-            const segmentTrip1 = await db.all(`
-                SELECT st.trip_id, t1.direction, st.departure_time, st.stop_sequence
-                FROM StopTimes st
-                LEFT JOIN Trips t1 ON st.trip_id = t1.trip_id
-                WHERE st.stop_id = ?
-                AND st.trip_id IN (SELECT trip_id FROM StopTimes WHERE stop_id IN (?,?))
-                AND st.departure_time >= ?
-                ORDER BY st.departure_time, t1.direction
-				LIMIT 1
-                `,[segment.via, targetStop, targetOtherWay, currentTime]);
+          console.log(segment.via, viaOtherWay, currentTime)
 
-            const segmentTrip2 = await db.all(`
-                SELECT st.trip_id, t1.direction, st.departure_time, st.stop_sequence
-                FROM StopTimes st
-                LEFT JOIN Trips t1 ON st.trip_id = t1.trip_id
-                WHERE st.stop_id = ?
-                AND st.trip_id IN (SELECT trip_id FROM StopTimes WHERE stop_id IN (?,?))
-                AND st.departure_time >= ?
-                ORDER BY st.departure_time, t1.direction
-				LIMIT 1
-                `,[viaOtherWay, targetStop, targetOtherWay, currentTime]);
-            
-            console.log(segmentTrip1[0],segmentTrip2[0])
+          const segmentTrip1 = await db.all(`
+              SELECT st.trip_id, t1.direction, st.departure_time, st.stop_sequence, st.stop_id
+              FROM StopTimes st
+              LEFT JOIN Trips t1 ON st.trip_id = t1.trip_id
+              WHERE st.stop_id = ?
+              AND st.trip_id IN (SELECT trip_id FROM StopTimes WHERE stop_id IN (?,?) AND departure_time > ?)
+              AND st.departure_time >= ?
+              ORDER BY st.departure_time, t1.direction
+              LIMIT 1
+              `,[segment.via, targetStop, targetOtherWay, currentTime, currentTime]);
 
-            const targetSequence  = await db.all(`
+          const segmentTrip2 = await db.all(`
+              SELECT st.trip_id, t1.direction, st.departure_time, st.stop_sequence, st.stop_id
+              FROM StopTimes st
+              LEFT JOIN Trips t1 ON st.trip_id = t1.trip_id
+              WHERE st.stop_id = ?
+              AND st.trip_id IN (SELECT trip_id FROM StopTimes WHERE stop_id IN (?,?) AND departure_time > ?)
+              AND st.departure_time >= ?
+              ORDER BY st.departure_time, t1.direction
+              LIMIT 1
+              `,[viaOtherWay, targetStop, targetOtherWay, currentTime, currentTime]);
+
+              var minDeparture_Time;
+              if (segmentTrip1[0].departure_time < segmentTrip2[0].departure_time){
+                minDeparture_Time = segmentTrip1[0].departure_time
+              } else {
+                minDeparture_Time = segmentTrip2[0].departure_time
+              }
+
+            const targetTrip  = await db.all(`
                 SELECT st.trip_id, direction, stop_id, stop_sequence, departure_time 
                 FROM StopTimes st
                 JOIN Trips t ON st.trip_id = t.trip_id
@@ -261,35 +286,101 @@ async function fastestPath(path, dicts, endStop, startTime, db){
                 OR st.trip_id = ?)
                 AND (st.stop_id = ?
                 OR st.stop_id = ?)
-                AND departure_time > ?
                 `,
                 [
                     segmentTrip1[0].trip_id, 
                     segmentTrip2[0].trip_id,
                     targetStop,
                     targetOtherWay,
-                    segmentTrip1[0].departure_time
                 ])
-                console.log(targetSequence[0])
-                if( targetStop == endStop){
-                    currentTime = targetSequence[0].departure_time
-                } else{
-                    currentTime = addSecondsToTime(targetSequence[0].departure_time, transferTimeDict[targetSequence[0].stop_id + "->" + currentPath.path[j+1].via])
-                }
+
+                var toStop;
+                var firstStop;
+
+                targetTrip.forEach(trip => {
+                  if(trip.direction == segmentTrip1[0].direction){
+                    if (trip.departure_time > segmentTrip1[0].departure_time){
+                      firstStop = segmentTrip1[0]
+                      toStop = trip
+                    }
+                    
+                  } else {
+                    if (trip.departure_time > segmentTrip2[0].departure_time){
+                      firstStop = segmentTrip2[0]
+                      toStop = trip
+                    }
+                  }
+                })
                 
-                console.log(currentTime)
+                console.log(segmentTrip1[0].trip_id)
+                console.log(segmentTrip2[0].trip_id)
+                console.log(targetStop)
+                console.log(targetOtherWay)
+                console.log(segmentTrip1[0].departure_time)
+                console.log(segmentTrip2[0].departure_time)
+
+                console.log(toStop)
+                
+                
+                
+                var connectingTime
+                if (targetStop == endStop){
+                  connectingTime = 0
+                } else {
+                  console.log(toStop)
+                  connectingTime = transferTimeDict[toStop.stop_id + "->" + currentPath.path[j+1].via]
+                }
+            
+            const stop1 = {
+              id: firstStop.stop_id,
+              name: stopNamesDict[firstStop.stop_id],
+              duration: 0,
+              distance: NaN
+            }
+
+            const stop2 = {
+              id: targetTrip[0].stop_id,
+              name: stopNamesDict[targetTrip[0].stop_id],
+              duration: getTimeDifferenceInSeconds(toStop.departure_time, firstStop.departure_time),
+              distance: NaN
+            }
+
+            
+
+            const line = routeOfStopDict[targetTrip[0].stop_id]
+
+            const ItinerarySegment = {
+              stops: [stop1, stop2],
+              line: line,
+              lineColor: colorOfRouteDict[line],
+              direction: toStop.direction,
+              connectingDuration: connectingTime
+            }
+
+            segment.ItinerarySegment = ItinerarySegment
+
+            
+            if( targetStop == endStop){
+                currentTime = toStop.departure_time
+            } else{
+                currentTime = addSecondsToTime(toStop.departure_time, transferTimeDict[toStop.stop_id + "->" + currentPath.path[j+1].via])
+            }
+          
+
+            Itinerary.segments.push(ItinerarySegment)
             
 
             
 
         }
         currentPath.time = currentTime
+        currentPath.Itinerary = Itinerary
+        
         
     }
     var minPath;
     var minTime = "30:00:00";
     path.forEach( currentPath => {
-        console.log(currentPath.time)
         if(currentPath.time < minTime){
             minPath = currentPath;
             minTime = currentPath.time
@@ -320,8 +411,8 @@ async function test(){
         driver: sqlite3.Database
     });
 
-    const startStop = "IDFM:463193"
-    const endStop = "IDFM:463323"
+    const startStop = "IDFM:463262"
+    const endStop = "IDFM:463198"
 
     const dicts = await computeIntersections(db)
 
@@ -336,9 +427,11 @@ async function test(){
 
     const minPath = await fastestPath(results, dicts, endStop, "08:00:00", db)
 
-
-    minPath.path.forEach( segment => console.log(segment))
-    console.log(minPath)
+    console.log(minPath.Itinerary)
+    minPath.Itinerary.segments.forEach(n => {
+      console.log(n)
+       n.stops.forEach( e => console.log(e))
+    })
 
     console.log("Program Over")
 

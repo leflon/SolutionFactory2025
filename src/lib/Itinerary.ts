@@ -19,7 +19,9 @@ export interface ItinerarySegment {
 	lineColor: string;
 	/* The direction to take on the line for this segment */
 	direction: string;
-	/* The time in seconds it takes to change lines from the previous segment to this segment */
+	/* The time in seconds it takes to change lines from the previous segment to this segment 
+	*  0 if last stop of the itinerary 
+	*/
 	connectingDuration?: number;
 }
 
