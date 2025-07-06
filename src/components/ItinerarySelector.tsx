@@ -14,8 +14,8 @@ const ItinerarySelector = ({ onRequest }: ItinerarySelectorProps) => {
 
 	return (
 		<div
-			className='absolute flex flex-col items-center justify-center gap-2
-		border border-gray-300 dark:border-gray-600 rounded-lg size-60 left-5 shadow-md dark:shadow-lg dark:bg-gray-700'
+			className='z-50 fixed top-20 bg-white flex flex-col items-center justify-center gap-2
+		border border-gray-300 dark:border-gray-600 rounded-lg size-60 left-5 shadow-md dark:shadow-lg'
 		>
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}

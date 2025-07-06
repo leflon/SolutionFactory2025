@@ -3,6 +3,7 @@
 	"author": "Equipe 12C",
 	"version": "0.1.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"db:format": "cd data && node format.js",
 		"dev": "next dev --turbopack",
@@ -16,14 +17,17 @@
 		"better-sqlite3": "^12.0.0",
 		"csv-parse": "^5.6.0",
 		"framer-motion": "^12.22.0",
+		"leaflet": "^1.9.4",
 		"next": "15.3.4",
 		"postcss": "^8.5.6",
 		"react": "^19.0.0",
-		"react-dom": "^19.0.0",
+		"react-dom": "^19.1.0",
+		"react-leaflet": "^5.0.0",
 		"tailwindcss": "^4.1.10"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.13",
+		"@types/leaflet": "^1.9.19",
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
