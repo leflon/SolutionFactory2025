@@ -16,13 +16,19 @@ export default function Home() {
 	console.log(network);
 	const handleItineraryRequest = (endpoints: ItineraryEndpoints) => {
 		console.log('Request: ', endpoints);
-		// TODO: Implement
+		// TODO: Implement API call to fetch itinerary based on endpoints
 	};
 
 	return (
-		<div>
+		<>
 			<Navbar />
 			<ItinerarySelector onRequest={handleItineraryRequest} />
 		</div>
+			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
+			<InteractiveMap
+				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
+				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
+			/>
+		</>
 	);
 }

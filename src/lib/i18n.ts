@@ -65,7 +65,6 @@ export function t(key: string, params?: Record<string, string | number>) {
 	// Get the requested entry, considering nested entries
 	const keySplit = key.split('.');
 	for (const part of keySplit) {
-		console.log(current, part);
 		// Cannot iterate over a string, so nesting stops here
 		if (typeof current === 'string') break;
 		// Cannot iterate over undefined, so nesting stops here
