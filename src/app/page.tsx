@@ -17,6 +17,8 @@ export default function Home() {
 		lastUpdate: Date;
 	} | null>(null);
 
+	const [stationToZoom, setStationToZoom] = useState<string | null>(null);
+
 	const handleItineraryRequest = (endpoints: ItineraryEndpoints) => {
 		console.log('Request: ', endpoints);
 		// TODO: Implement API call to fetch itinerary based on endpoints
@@ -36,7 +38,7 @@ export default function Home() {
 		<>
 			<Navbar />
 			<ItinerarySelector onRequest={handleItineraryRequest} />
-			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} />
+			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} onStationClick={setStationToZoom} />
 			<div className='z-50 fixed bottom-5 w-full flex justify-center'>
 				<div className='w-7/12 h-22 flex justify-end items-center drop-shadow-lg'>
 					{trafficInfo && <TrafficInfo {...trafficInfo} />}
@@ -45,6 +47,8 @@ export default function Home() {
 			<InteractiveMap
 				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
 				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
+				stationToZoom={stationToZoom}
+				onZoomEnd={() => setStationToZoom(null)}
 			/>
 		</>
 	);

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FiInfo } from "react-icons/fi";
 import { FaDoorOpen, FaPeopleGroup, FaTrainSubway } from "react-icons/fa6";
+import { LuTrainTrack } from "react-icons/lu";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import Image from "next/image";
 import LinePlan from "./LinePlan";
 import type { MetroLineInfo } from "@/lib/metroinfo";
@@ -14,6 +16,7 @@ type Station = {
 
 type MetroLineInfoProps = {
     lineName: string;
+    onStationClick?: (stationName: string) => void;
 };
 
 async function fetchLineInfo(lineId: string) {
@@ -24,7 +27,7 @@ async function fetchLineInfo(lineId: string) {
 
 
 export default function MetroLineInfo({
-    lineName
+    lineName, onStationClick
 }: MetroLineInfoProps) {
     const [showInfo, setShowInfo] = useState(false);
     const [selectedStation, setSelectedStation] = useState<Station | null>(null);
@@ -94,8 +97,10 @@ export default function MetroLineInfo({
                         <div className="flex items-center flex-col"><FaDoorOpen /> {informations?.date_ouverture}</div>
                         <div className="flex items-center flex-col"><FaPeopleGroup /> {informations?.nombre_voyageurs}</div>
                         <div className="flex items-center flex-col"><FaTrainSubway /> {informations?.materiel_roulant}</div>
+                        <div className="flex items-center flex-col"><LuTrainTrack /> {informations?.longueur_km + " km"}</div>
+                        <div className="flex items-center flex-col"><FaMapMarkerAlt /> {informations?.nombre_stations}</div>
                     </div>
-                    <LinePlan lineId={lineName} />
+                    <LinePlan lineId={lineName} onStationClick={onStationClick} />
                 </motion.div>
             )}
         </div>

@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 
 type LinePlanProps = {
   lineId: string;
+  onStationClick?: (stationName: string) => void;
 };
 
 let stops: string[] = [];
 
-const LinePlan = ({ lineId }: LinePlanProps) => {
+const LinePlan = ({ lineId, onStationClick }: LinePlanProps) => {
   const [lineColor, setLineColor] = useState("#777777");
   const [stations, setStations] = useState<string[]>(stops);
 
@@ -60,6 +61,7 @@ const LinePlan = ({ lineId }: LinePlanProps) => {
               className="cursor-pointer"
               whileHover={{ scale: 1.4 }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              onClick={() => onStationClick?.(station.name)}
               >
               <motion.circle
                 cx={offsetX}
