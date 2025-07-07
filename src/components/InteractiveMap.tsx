@@ -12,7 +12,7 @@ import {
 	useMapEvents,
 	ZoomControl
 } from 'react-leaflet';
-import { MetroNetwork } from '@/lib/types';
+import { Itinerary, MetroNetwork } from '@/lib/types';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 
@@ -27,13 +27,15 @@ type Stop = {
 };
 
 type InteractiveMapProps = {
-	minimumSpanningTree?: MetroNetwork;
+	customGraph?: MetroNetwork;
+	itinerary?: Itinerary;
 	onDepartureSelected?: (stopId: string) => any;
 	onDestinationSelected?: (stopId: string) => any;
 };
 
 export default function InteractiveMap({
-	minimumSpanningTree,
+	customGraph,
+	itinerary,
 	onDepartureSelected,
 	onDestinationSelected
 }: InteractiveMapProps) {
@@ -99,7 +101,7 @@ export default function InteractiveMap({
 	};
 
 	const currentRadius = calculateRadius(currentZoom);
-	if (minimumSpanningTree) {
+	if (customGraph) {
 		return (
 			<div className='relative h-full z-0'>
 				<MapContainer
@@ -114,7 +116,7 @@ export default function InteractiveMap({
 						url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 						attribution='&copy; OpenStreetMap contributors | &copy; IDFM'
 					/>
-					{Object.values(minimumSpanningTree.nodes).map((stop) => (
+					{Object.values(customGraph.nodes).map((stop) => (
 						<CircleMarker
 							key={stop.id}
 							center={[stop.longitude, stop.latitude]}
@@ -131,10 +133,10 @@ export default function InteractiveMap({
 							</Popup>
 						</CircleMarker>
 					))}
-					{Object.values(minimumSpanningTree.edges).map((edges) =>
+					{Object.values(customGraph.edges).map((edges) =>
 						edges.map((edge) => {
-							const from = minimumSpanningTree.nodes[edge.fromId];
-							const to = minimumSpanningTree.nodes[edge.toId];
+							const from = customGraph.nodes[edge.fromId];
+							const to = customGraph.nodes[edge.toId];
 							if (!from || !to) return <React.Fragment></React.Fragment>;
 							return (
 								<Polyline
@@ -159,13 +161,14 @@ export default function InteractiveMap({
 			</div>
 		);
 	}
+	console.log('update');
 	return (
 		<div className='relative h-full z-0'>
 			<MapContainer
 				center={DEFAULT_CENTER}
 				zoom={BASE_ZOOM_LEVEL}
 				zoomControl={false}
-				style={{ zIndex: -500, width: '100%', height: '100%' }}
+				style={{ width: '100%', height: '100%' }}
 			>
 				<ZoomControl position='bottomright' />
 				<ZoomHandler />
@@ -178,6 +181,15 @@ export default function InteractiveMap({
 						data={routePaths}
 						style={(feature) => ({
 							weight: 2 + currentRadius / 2,
+							className: itinerary
+								? itinerary.segments.some(
+										(seg) =>
+											seg.line.id.split(':')[1] ===
+											feature?.properties.idrefligc
+									)
+									? 'opacity-0'
+									: 'opacity-100'
+								: ' test',
 							color: '#' + feature!.properties.colourweb_hexa,
 							lineJoin: 'round'
 						})}
