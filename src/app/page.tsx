@@ -51,15 +51,9 @@ export default function Home() {
 					setEndpoints({ departure: null, destination: null });
 					setSelectedItinerary(-1);
 				}}
-				onSelectItinerary={(selected) =>
-					setSelectedItinerary(
-						itineraries ? itineraries.findIndex((it) => it === selected) : -1
-					)
-				}
+				selectedItinerary={selectedItinerary}
+				setSelectedItinerary={setSelectedItinerary}
 			/>
-			{itineraries && selectedItinerary !== -1 && (
-				<ItineraryBreakdown itinerary={itineraries[selectedItinerary]} />
-			)}
 			<InteractiveMap
 				itinerary={
 					selectedItinerary !== -1 && itineraries

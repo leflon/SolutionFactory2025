@@ -9,18 +9,23 @@ type ItineraryPreviewProps = {
 	itinerary: Itinerary;
 	isBestCarbon?: boolean;
 	onClick?: () => void;
+	isSelected: boolean;
 };
 
 const ItineraryPreview = ({
 	itinerary,
 	isBestCarbon,
+	isSelected,
 	onClick
 }: ItineraryPreviewProps) => {
 	return (
 		<button
 			className={
 				'relative text-left cursor-pointer rounded bg-gray-200 overflow-hidden transition-transform active:scale-95' +
-				(isBestCarbon ? ' border-3 border-green-400' : '')
+				(isBestCarbon ? ' border-3 border-green-400' : '') +
+				(isSelected
+					? ' border-3 !border-blue-500'
+					: ' border-3 border-gray-200')
 			}
 			onClick={onClick}
 		>

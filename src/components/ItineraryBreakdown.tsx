@@ -108,15 +108,8 @@ type ItineraryBreakdownProps = {
 };
 const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 	return (
-		<div className='fixed bottom-10 left-5 h-1/2 w-60 bg-white dark:bg-gray-700 shadow-lg rounded-lg p-4 overflow-y-auto z-50 dark:text-white border-[1px] border-gray-300 dark:border-gray-600'>
-			<div
-				className={
-					'flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg' +
-					(itinerary.segments.length > 2
-						? ' overflow-x-auto justify-start'
-						: ' justify-center overflow-hidden')
-				}
-			>
+		<div className='relative w-full p-4'>
+			<div className='flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg overflow-x-auto'>
 				{itinerary.segments.map((segment, i) => (
 					<Fragment key={segment.line.id}>
 						{segment.connectingDuration !== undefined && (
@@ -135,6 +128,7 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 							alt={segment.line.name}
 							width={18}
 							height={18}
+							className='first:ml-auto last:mr-auto'
 						/>
 						{i !== itinerary.segments.length - 1 && (
 							<MdKeyboardArrowRight size={18} />

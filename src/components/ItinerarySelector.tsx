@@ -4,13 +4,15 @@ import { MdClose, MdOutlineSwapCalls } from 'react-icons/md';
 import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
 import ItineraryPreview from './ItineraryPreview';
+import ItineraryBreakdown from './ItineraryBreakdown';
 
 type ItinerarySelectorProps = {
 	onRequest: () => any;
 	endpoints: ItineraryEndpoints;
 	setEndpoints: Dispatch<SetStateAction<ItineraryEndpoints>>;
 	itineraries?: Itinerary[];
-	onSelectItinerary: (itinerary: Itinerary) => void;
+	selectedItinerary: number;
+	setSelectedItinerary: (i: number) => void;
 	onClear: () => void;
 	isLoading?: boolean;
 };
@@ -19,7 +21,8 @@ const ItinerarySelector = ({
 	endpoints,
 	setEndpoints,
 	itineraries,
-	onSelectItinerary,
+	selectedItinerary,
+	setSelectedItinerary,
 	onClear,
 	isLoading
 }: ItinerarySelectorProps) => {
@@ -51,8 +54,8 @@ const ItinerarySelector = ({
 
 	return (
 		<div
-			className='z-50 fixed top-20 bg-white flex flex-col items-center justify-center gap-2
-		border border-gray-300 dark:border-gray-600 rounded-lg w-80 py-4 left-5 shadow-md dark:shadow-lg'
+			className='z-50 fixed top-20 bg-white flex flex-col items-center gap-2
+		border border-gray-300 dark:border-gray-600 rounded-lg w-80 max-h-9/12 overflow-y-auto overflow-x-hidden py-4 left-5 shadow-md dark:shadow-lg'
 		>
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}
@@ -110,18 +113,19 @@ const ItinerarySelector = ({
 			</button>
 			<div className='flex flex-col gap-2 w-full px-4'>
 				{itineraries &&
-					itineraries
-						.slice()
-						.sort((a, b) => a.carbonFootprint - b.carbonFootprint)
-						.map((itinerary, i) => (
-							<ItineraryPreview
-								key={i}
-								itinerary={itinerary}
-								isBestCarbon={i === 0}
-								onClick={() => onSelectItinerary(itinerary)}
-							/>
-						))}
+					itineraries.map((itinerary, i) => (
+						<ItineraryPreview
+							key={i}
+							itinerary={itinerary}
+							isBestCarbon={i === 0}
+							isSelected={i === selectedItinerary}
+							onClick={() => setSelectedItinerary(i)}
+						/>
+					))}
 			</div>
+			{itineraries && selectedItinerary !== -1 && (
+				<ItineraryBreakdown itinerary={itineraries[selectedItinerary]} />
+			)}
 		</div>
 	);
 };

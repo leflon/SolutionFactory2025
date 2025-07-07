@@ -96,3 +96,8 @@ body {
 .leaflet-control-attribution {
 	filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
