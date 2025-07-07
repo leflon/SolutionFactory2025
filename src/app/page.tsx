@@ -25,6 +25,7 @@ export default function Home() {
 	}, []);
 
 	const handleItineraryRequest = () => {
+		console.log('ok?');
 		// TODO: Implement API call to fetch itinerary based on endpoints
 		if (!endpoints.departure || !endpoints.destination) return;
 		fetch(
@@ -32,6 +33,7 @@ export default function Home() {
 		)
 			.then((res) => res.json())
 			.then(setItineraries);
+		setSelectedItinerary(-1);
 	};
 
 	console.log(itineraries);
@@ -44,6 +46,11 @@ export default function Home() {
 				endpoints={endpoints}
 				setEndpoints={setEndpoints}
 				itineraries={itineraries}
+				onClear={() => {
+					setItineraries(undefined);
+					setEndpoints({ departure: null, destination: null });
+					setSelectedItinerary(-1);
+				}}
 				onSelectItinerary={(selected) =>
 					setSelectedItinerary(
 						itineraries ? itineraries.findIndex((it) => it === selected) : -1
@@ -54,6 +61,11 @@ export default function Home() {
 				<ItineraryBreakdown itinerary={itineraries[selectedItinerary]} />
 			)}
 			<InteractiveMap
+				itinerary={
+					selectedItinerary !== -1 && itineraries
+						? itineraries[selectedItinerary]
+						: undefined
+				}
 				onDepartureSelected={(id) =>
 					setEndpoints((endpoints) => ({ ...endpoints, departure: id }))
 				}

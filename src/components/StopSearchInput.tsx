@@ -45,7 +45,7 @@ const StopSearchInput = ({
 	};
 
 	useEffect(() => {
-		if (value) setQuery(value);
+		if (value !== null) setQuery(value);
 	}, [value]);
 
 	useEffect(() => {

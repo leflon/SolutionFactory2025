@@ -17,6 +17,14 @@ export async function GET(req: NextRequest) {
 
 	const itineraryDuration = getItineraryDijkstra(from, to, 'duration');
 	const itineraryTransfers = getItineraryDijkstra(from, to, 'transfers');
+	if (!itineraryTransfers || !itineraryDuration) {
+		return new Response(JSON.stringify({ error: 'No itinerary found' }), {
+			status: 404
+		});
+	}
+	let returned = [itineraryDuration];
+	if (itineraryTransfers.segments.length < itineraryDuration.segments.length)
+		returned.push(itineraryTransfers);
 
-	return new Response(JSON.stringify([itineraryDuration, itineraryTransfers]));
+	return Response.json(returned);
 }

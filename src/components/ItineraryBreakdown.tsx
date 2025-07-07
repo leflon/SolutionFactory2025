@@ -112,7 +112,7 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 			<div
 				className={
 					'flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg' +
-					(itinerary.segments.length > 1
+					(itinerary.segments.length > 2
 						? ' overflow-x-auto justify-start'
 						: ' justify-center overflow-hidden')
 				}

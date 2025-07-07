@@ -1,6 +1,6 @@
 import { Itinerary, ItineraryEndpoints } from '@/lib/types';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { MdOutlineSwapCalls } from 'react-icons/md';
+import { MdClose, MdOutlineSwapCalls } from 'react-icons/md';
 import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
 import ItineraryPreview from './ItineraryPreview';
@@ -11,6 +11,7 @@ type ItinerarySelectorProps = {
 	setEndpoints: Dispatch<SetStateAction<ItineraryEndpoints>>;
 	itineraries?: Itinerary[];
 	onSelectItinerary: (itinerary: Itinerary) => void;
+	onClear: () => void;
 	isLoading?: boolean;
 };
 const ItinerarySelector = ({
@@ -19,6 +20,7 @@ const ItinerarySelector = ({
 	setEndpoints,
 	itineraries,
 	onSelectItinerary,
+	onClear,
 	isLoading
 }: ItinerarySelectorProps) => {
 	const [displayedEndpoints, setDisplayedEndpoints] =
@@ -41,10 +43,16 @@ const ItinerarySelector = ({
 	useEffect(() => {
 		if (endpoints.destination) fetchName('destination', endpoints.destination);
 	}, [endpoints.destination]);
+
+	const clear = () => {
+		setDisplayedEndpoints({ departure: '', destination: '' });
+		onClear();
+	};
+
 	return (
 		<div
 			className='z-50 fixed top-20 bg-white flex flex-col items-center justify-center gap-2
-		border border-gray-300 dark:border-gray-600 rounded-lg w-80 min-h-80 py-4 left-5 shadow-md dark:shadow-lg'
+		border border-gray-300 dark:border-gray-600 rounded-lg w-80 py-4 left-5 shadow-md dark:shadow-lg'
 		>
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}
@@ -66,20 +74,29 @@ const ItinerarySelector = ({
 						value={displayedEndpoints.destination}
 					/>
 				</div>
-				<MdOutlineSwapCalls
-					size={38}
-					className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
-					onClick={() => {
-						setEndpoints({
-							departure: endpoints.destination,
-							destination: endpoints.departure
-						});
-						setDisplayedEndpoints({
-							departure: displayedEndpoints.destination,
-							destination: displayedEndpoints.departure
-						});
-					}}
-				/>
+				<div>
+					{itineraries && (
+						<MdClose
+							size={38}
+							className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+							onClick={clear}
+						/>
+					)}
+					<MdOutlineSwapCalls
+						size={38}
+						className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+						onClick={() => {
+							setEndpoints({
+								departure: endpoints.destination,
+								destination: endpoints.departure
+							});
+							setDisplayedEndpoints({
+								departure: displayedEndpoints.destination,
+								destination: displayedEndpoints.departure
+							});
+						}}
+					/>
+				</div>
 			</div>
 			<button
 				onClick={onRequest}
@@ -98,6 +115,7 @@ const ItinerarySelector = ({
 						.sort((a, b) => a.carbonFootprint - b.carbonFootprint)
 						.map((itinerary, i) => (
 							<ItineraryPreview
+								key={i}
 								itinerary={itinerary}
 								isBestCarbon={i === 0}
 								onClick={() => onSelectItinerary(itinerary)}

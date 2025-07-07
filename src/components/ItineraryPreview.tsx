@@ -19,7 +19,7 @@ const ItineraryPreview = ({
 	return (
 		<button
 			className={
-				'relative text-left cursor-pointer rounded bg-gray-200 overflow-hidden' +
+				'relative text-left cursor-pointer rounded bg-gray-200 overflow-hidden transition-transform active:scale-95' +
 				(isBestCarbon ? ' border-3 border-green-400' : '')
 			}
 			onClick={onClick}

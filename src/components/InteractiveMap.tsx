@@ -13,6 +13,7 @@ import {
 	ZoomControl
 } from 'react-leaflet';
 import { Itinerary, MetroNetwork } from '@/lib/types';
+import next from 'next';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 
@@ -160,6 +161,50 @@ export default function InteractiveMap({
 			</div>
 		);
 	}
+
+	let itineraryLines: React.ReactNode[] = [];
+	let itineraryMarkers: React.ReactNode[] = [];
+	if (itinerary) {
+		itinerary.segments.forEach((segment) =>
+			segment.stops.forEach((stop, i) => {
+				const currentStop = stops.find((s) => s.name === stop.name);
+				let line;
+				if (i < segment.stops.length - 1) {
+					const nextStop = stops.find(
+						(s) => s.name === segment.stops[i + 1].name
+					);
+					if (currentStop && nextStop)
+						itineraryLines.push(
+							<Polyline
+								key={currentStop.stop_id + nextStop.stop_id}
+								positions={[
+									[currentStop.latitude, currentStop.longitude],
+									[nextStop.latitude, nextStop.longitude]
+								]}
+								pathOptions={{
+									color: '#' + segment.line.color,
+									weight: 10
+								}}
+							/>
+						);
+				}
+				const isBig = i === 0 || i === segment.stops.length - 1;
+				if (!currentStop) return;
+				itineraryMarkers.push(
+					<CircleMarker
+						center={[currentStop.latitude, currentStop.longitude]}
+						radius={isBig ? currentRadius : 3}
+						pathOptions={{
+							fillColor: isBig ? '#fff' : '#000',
+							fillOpacity: 1,
+							color: '#000',
+							weight: isBig ? currentRadius / 2 : 0
+						}}
+					/>
+				);
+			})
+		);
+	}
 	return (
 		<div className='relative h-full z-0'>
 			<MapContainer
@@ -174,26 +219,24 @@ export default function InteractiveMap({
 					url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 					attribution='&copy; OpenStreetMap contributors | &copy; IDFM'
 				/>
-				{routePaths && (
+				{itinerary && (
+					<>
+						{itineraryLines}
+						{itineraryMarkers}
+					</>
+				)}
+				{routePaths && !itinerary && (
 					<GeoJSON
 						data={routePaths}
 						style={(feature) => ({
 							weight: 2 + currentRadius / 2,
-							className: itinerary
-								? itinerary.segments.some(
-										(seg) =>
-											seg.line.id.split(':')[1] ===
-											feature?.properties.idrefligc
-									)
-									? 'opacity-0'
-									: 'opacity-100'
-								: ' test',
 							color: '#' + feature!.properties.colourweb_hexa,
 							lineJoin: 'round'
 						})}
 					/>
 				)}
 				{currentZoom > 10 &&
+					!itinerary &&
 					uniqueStops.map((stop) => {
 						const lines = stop.route_names;
 						const colors = stop.route_colors.map((color) =>
