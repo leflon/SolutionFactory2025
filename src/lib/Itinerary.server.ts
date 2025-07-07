@@ -156,6 +156,7 @@ interface PrimQueueEntry {
 	weight: number;
 	fromNodeId: string | null; // The node from which this edge originates (for building the MST)
 	toNodeId: string; // The node to which this edge leads
+	distance: number;
 }
 
 let cachedMst: MetroNetwork | null = null;
@@ -205,7 +206,8 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
 		pq.enqueue({
 			weight: edge.duration,
 			fromNodeId: edge.fromId,
-			toNodeId: edge.toId
+			toNodeId: edge.toId,
+			distance: edge.distance
 		});
 	}
 
@@ -251,7 +253,8 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
 				pq.enqueue({
 					weight: edge.duration,
 					fromNodeId: edge.fromId,
-					toNodeId: edge.toId
+					toNodeId: edge.toId,
+					distance: edge.distance
 				});
 			}
 		}
