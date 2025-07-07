@@ -17,5 +17,12 @@
 	},
 	"Map": {
 		"lines": "Lignes:"
+	},
+	"ItineraryPreview": {
+		"bestCarbon": "Empreinte carbone optimale",
+		"criterion": {
+			"duration": "Le plus rapide",
+			"transfers": "Moins de correspondances"
+		}
 	}
 }

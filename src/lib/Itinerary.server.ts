@@ -273,11 +273,13 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
  * Finds the shortest path between two stops using Dijkstra's algorithm
  * @param fromStopId - The ID of the departure stop
  * @param toStopId - The ID of the destination stop
+ * @param criterion - The criterion used to optimize the path. Transfers will minimize the number of transfers by making the weight a transfer ridiculously high
  * @returns An Itinerary object representing the shortest path, or null if no path exists
  */
 export function getItineraryDijkstra(
 	fromStopId: string,
-	toStopId: string
+	toStopId: string,
+	criterion: 'duration' | 'transfers' = 'duration'
 ): Itinerary | null {
 	const network = getMetroNetwork();
 
@@ -329,8 +331,9 @@ export function getItineraryDijkstra(
 			if (visited.has(edge.toId)) {
 				continue;
 			}
-
-			const newDistance = current.distance + edge.duration;
+			let newDistance = current.distance + edge.duration;
+			// Make transfers very expensive to force the algorithm to avoid them
+			if (criterion === 'transfers' && edge.isTransfer) newDistance += 1000;
 
 			if (newDistance < distances.get(edge.toId)!) {
 				distances.set(edge.toId, newDistance);
@@ -444,6 +447,7 @@ export function getItineraryDijkstra(
 	return {
 		segments,
 		// 3.8gCO2e per km (https://www.ratp.fr/aide-contact/questions/calculer-son-empreinte-carbone)
-		carbonFootprint: (getTotalDistance(segments) * 3.8) / 1000
+		carbonFootprint: (getTotalDistance(segments) * 3.8) / 1000,
+		criterion
 	};
 }

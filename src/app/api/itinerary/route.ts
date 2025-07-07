@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
 		});
 	}
 
-	const itinerary = getItineraryDijkstra(from, to);
+	const itineraryDuration = getItineraryDijkstra(from, to, 'duration');
+	const itineraryTransfers = getItineraryDijkstra(from, to, 'transfers');
 
-	return new Response(JSON.stringify(itinerary));
+	return new Response(JSON.stringify([itineraryDuration, itineraryTransfers]));
 }

@@ -72,7 +72,7 @@ const StopSearchInput = ({
 	}, [query]);
 
 	return (
-		<div className='relative inline-block w-50'>
+		<div className='relative inline-block w-full px-4'>
 			{label && <label className='mb-1 pl-2 font-bold'>{label}</label>}
 			<div className='relative flex items-center'>
 				<input

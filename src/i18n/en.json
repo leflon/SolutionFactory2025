@@ -17,5 +17,12 @@
 	},
 	"Map": {
 		"lines": "Lines:"
+	},
+	"ItineraryPreview": {
+		"bestCarbon": "Lowest carbon footprint",
+		"criterion": {
+			"duration": "Quickest",
+			"transfers": "Fewer transfers"
+		}
 	}
 }

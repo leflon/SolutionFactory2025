@@ -2,16 +2,23 @@ import { Itinerary, ItineraryEndpoints } from '@/lib/types';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
+import ItineraryPreview from './ItineraryPreview';
 
 type ItinerarySelectorProps = {
 	onRequest: () => any;
 	endpoints: ItineraryEndpoints;
 	setEndpoints: Dispatch<SetStateAction<ItineraryEndpoints>>;
+	itineraries?: Itinerary[];
+	onSelectItinerary: (itinerary: Itinerary) => void;
+	isLoading?: boolean;
 };
 const ItinerarySelector = ({
 	onRequest,
 	endpoints,
-	setEndpoints
+	setEndpoints,
+	itineraries,
+	onSelectItinerary,
+	isLoading
 }: ItinerarySelectorProps) => {
 	const [displayedEndpoints, setDisplayedEndpoints] =
 		useState<ItineraryEndpoints>({ departure: null, destination: null });
@@ -36,7 +43,7 @@ const ItinerarySelector = ({
 	return (
 		<div
 			className='z-50 fixed top-20 bg-white flex flex-col items-center justify-center gap-2
-		border border-gray-300 dark:border-gray-600 rounded-lg size-60 left-5 shadow-md dark:shadow-lg'
+		border border-gray-300 dark:border-gray-600 rounded-lg w-80 min-h-80 py-4 left-5 shadow-md dark:shadow-lg'
 		>
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}
@@ -63,6 +70,19 @@ const ItinerarySelector = ({
 			>
 				{t('ItinerarySelector.go')}
 			</button>
+			<div className='flex flex-col gap-2 w-full px-4'>
+				{itineraries &&
+					itineraries
+						.slice()
+						.sort((a, b) => a.carbonFootprint - b.carbonFootprint)
+						.map((itinerary, i) => (
+							<ItineraryPreview
+								itinerary={itinerary}
+								isBestCarbon={i === 0}
+								onClick={() => onSelectItinerary(itinerary)}
+							/>
+						))}
+			</div>
 		</div>
 	);
 };

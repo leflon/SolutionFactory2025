@@ -13,7 +13,10 @@ export default function Home() {
 		departure: null,
 		destination: null
 	});
-	const [itinerary, setItinerary] = useState<Itinerary | undefined>(undefined);
+	const [itineraries, setItineraries] = useState<Itinerary[] | undefined>(
+		undefined
+	);
+	const [selectedItinerary, setSelectedItinerary] = useState(-1);
 
 	useEffect(() => {
 		fetch('/api/network')
@@ -28,10 +31,10 @@ export default function Home() {
 			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}`
 		)
 			.then((res) => res.json())
-			.then(setItinerary);
+			.then(setItineraries);
 	};
 
-	console.log(itinerary);
+	console.log(itineraries);
 
 	return (
 		<>
@@ -40,8 +43,16 @@ export default function Home() {
 				onRequest={handleItineraryRequest}
 				endpoints={endpoints}
 				setEndpoints={setEndpoints}
+				itineraries={itineraries}
+				onSelectItinerary={(selected) =>
+					setSelectedItinerary(
+						itineraries ? itineraries.findIndex((it) => it === selected) : -1
+					)
+				}
 			/>
-			{itinerary && <ItineraryBreakdown itinerary={itinerary} />}
+			{itineraries && selectedItinerary !== -1 && (
+				<ItineraryBreakdown itinerary={itineraries[selectedItinerary]} />
+			)}
 			<InteractiveMap
 				onDepartureSelected={(id) =>
 					setEndpoints((endpoints) => ({ ...endpoints, departure: id }))

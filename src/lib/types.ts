@@ -43,6 +43,8 @@ export interface Itinerary {
 	segments: ItinerarySegment[];
 	/* Carbon footprint of this itinerary in gCO2e */
 	carbonFootprint: number;
+	/* The criterion used to compute the itinerary */
+	criterion: 'transfers' | 'duration';
 }
 
 /**
