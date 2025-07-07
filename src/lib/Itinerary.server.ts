@@ -439,6 +439,8 @@ export function getItineraryDijkstra(
 		segments.push(currentSegment);
 	}
 
+	segments.filter((segment) => segment.stops.length > 1);
+
 	return {
 		segments
 	};

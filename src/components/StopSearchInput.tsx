@@ -8,6 +8,7 @@ type StopSearchInputProps = {
 	placeholder?: string;
 	/** Label text for the input */
 	label?: string;
+	value: string | null;
 };
 
 type Stop = {
@@ -20,6 +21,7 @@ const StopSearchInput = ({
 	onSelect,
 	placeholder,
 	label,
+	value
 }: StopSearchInputProps) => {
 	const [query, setQuery] = useState('');
 	const [suggestedStops, setSuggestedStops] = useState<Stop[]>([]);
@@ -43,17 +45,21 @@ const StopSearchInput = ({
 	};
 
 	useEffect(() => {
+		if (value) setQuery(value);
+	}, [value]);
+
+	useEffect(() => {
 		if (debounceTimer.current) clearTimeout(debounceTimer.current);
 		debounceTimer.current = setTimeout(async () => {
 			if (query.length < 2) return;
 			if (!showDropdown) return;
 			setIsLoading(true);
 			const res = await fetch(
-				`/api/autocomplete?q=${encodeURIComponent(query)}`,
+				`/api/autocomplete?q=${encodeURIComponent(query)}`
 			).then((res) => res.json());
 			const { stops } = res;
 			stops.forEach((stop: Stop) =>
-				stop.route_names.sort((a, b) => parseInt(a) - parseInt(b)),
+				stop.route_names.sort((a, b) => parseInt(a) - parseInt(b))
 			);
 			setSuggestedStops(res.stops);
 			setIsLoading(false);

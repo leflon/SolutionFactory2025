@@ -9,36 +9,47 @@ import { useEffect, useState } from 'react';
 
 export default function Home() {
 	const [network, setNetwork] = useState<MetroNetwork | undefined>(undefined);
+	const [endpoints, setEndpoints] = useState<ItineraryEndpoints>({
+		departure: null,
+		destination: null
+	});
 	const [itinerary, setItinerary] = useState<Itinerary | undefined>(undefined);
 
 	useEffect(() => {
-		console.log('NETWOOOORK');
 		fetch('/api/network')
 			.then((res) => res.json())
 			.then(setNetwork);
-		fetch('/api/itinerary?from=IDFM:463170&to=IDFM:463124')
-			.then((res) => res.json())
-			.then((res) => {
-				console.log(res);
-				setItinerary(res);
-			});
 	}, []);
 
 	console.log(network);
-	const handleItineraryRequest = (endpoints: ItineraryEndpoints) => {
-		console.log('Request: ', endpoints);
+	const handleItineraryRequest = () => {
+		console.log('allo');
+		console.log(endpoints);
 		// TODO: Implement API call to fetch itinerary based on endpoints
+		if (!endpoints.departure || !endpoints.destination) return;
+		fetch(
+			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}`
+		)
+			.then((res) => res.json())
+			.then(setItinerary);
 	};
 
 	return (
 		<>
 			<Navbar />
-			<ItinerarySelector onRequest={handleItineraryRequest} />
+			<ItinerarySelector
+				onRequest={handleItineraryRequest}
+				endpoints={endpoints}
+				setEndpoints={setEndpoints}
+			/>
 			{itinerary && <ItineraryBreakdown itinerary={itinerary} />}
 			<InteractiveMap
-				minimumSpanningTree={network}
-				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
-				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
+				onDepartureSelected={(id) =>
+					setEndpoints((endpoints) => ({ ...endpoints, departure: id }))
+				}
+				onDestinationSelected={(id) =>
+					setEndpoints((endpoints) => ({ ...endpoints, destination: id }))
+				}
 			/>
 		</>
 	);

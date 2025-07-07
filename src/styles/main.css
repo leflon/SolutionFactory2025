@@ -39,8 +39,9 @@ body {
 		&:before {
 			border-color: var(--border-color);
 			opacity: 1;
-			/* Delay is added to account for the parent container overflow delay */
-			transition: opacity 0.3s ease-in-out 0.05s;
+			transition: opacity 0.3s ease-in-out;
+			/* The base 0.05s Delay is added to account for the parent container overflow delay */
+			transition-delay: calc(0.05s + var(--data-index) * 0.05s);
 		}
 
 		&[data-displayed='false'] {

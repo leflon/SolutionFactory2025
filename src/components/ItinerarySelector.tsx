@@ -1,17 +1,38 @@
-import { ItineraryEndpoints } from '@/lib/types';
-import { useState } from 'react';
+import { Itinerary, ItineraryEndpoints } from '@/lib/types';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
 
 type ItinerarySelectorProps = {
-	onRequest: (endpoints: ItineraryEndpoints) => any;
+	onRequest: () => any;
+	endpoints: ItineraryEndpoints;
+	setEndpoints: Dispatch<SetStateAction<ItineraryEndpoints>>;
 };
-const ItinerarySelector = ({ onRequest }: ItinerarySelectorProps) => {
-	const [endpoints, setEndpoints] = useState<ItineraryEndpoints>({
-		departure: null,
-		destination: null,
-	});
+const ItinerarySelector = ({
+	onRequest,
+	endpoints,
+	setEndpoints
+}: ItinerarySelectorProps) => {
+	const [displayedEndpoints, setDisplayedEndpoints] =
+		useState<ItineraryEndpoints>({ departure: null, destination: null });
 
+	const fetchName = async (
+		endpoint: 'departure' | 'destination',
+		id: string
+	) => {
+		const { stop } = await fetch(`/api/stop/${id}`).then((res) => res.json());
+		if (!stop) return;
+
+		const { name } = stop;
+		setDisplayedEndpoints((endpoints) => ({ ...endpoints, [endpoint]: name }));
+	};
+
+	useEffect(() => {
+		if (endpoints.departure) fetchName('departure', endpoints.departure);
+	}, [endpoints.departure]);
+	useEffect(() => {
+		if (endpoints.destination) fetchName('destination', endpoints.destination);
+	}, [endpoints.destination]);
 	return (
 		<div
 			className='z-50 fixed top-20 bg-white flex flex-col items-center justify-center gap-2
@@ -23,15 +44,17 @@ const ItinerarySelector = ({ onRequest }: ItinerarySelectorProps) => {
 			<StopSearchInput
 				placeholder={t('ItinerarySelector.departure')}
 				onSelect={(stopId) => setEndpoints({ ...endpoints, departure: stopId })}
+				value={displayedEndpoints.departure}
 			/>
 			<StopSearchInput
 				placeholder={t('ItinerarySelector.destination')}
 				onSelect={(stopId) =>
 					setEndpoints({ ...endpoints, destination: stopId })
 				}
+				value={displayedEndpoints.destination}
 			/>
 			<button
-				onClick={() => onRequest(endpoints)}
+				onClick={onRequest}
 				className='cursor-pointer w-32 px-3 py-1 mt-2 border-2
 				border-green-600 text-green-500 dark:border-pink-400 dark:text-pink-400
 				font-medium rounded-md transition-all duration-300 ease-in-out

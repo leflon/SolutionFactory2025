@@ -29,13 +29,13 @@ type Stop = {
 type InteractiveMapProps = {
 	minimumSpanningTree?: MetroNetwork;
 	onDepartureSelected?: (stopId: string) => any;
-	onArrivalSelected?: (stopId: string) => any;
+	onDestinationSelected?: (stopId: string) => any;
 };
 
 export default function InteractiveMap({
 	minimumSpanningTree,
 	onDepartureSelected,
-	onArrivalSelected
+	onDestinationSelected
 }: InteractiveMapProps) {
 	const BASE_ZOOM_LEVEL = 12;
 	const [routePaths, setRoutePaths] = useState<any>(null);
@@ -241,7 +241,8 @@ export default function InteractiveMap({
 											<span className='!w-px h-3 bg-black !p-0 pointer-events-none'></span>
 											<button
 												onClick={() =>
-													onArrivalSelected && onArrivalSelected(stop.stop_id)
+													onDestinationSelected &&
+													onDestinationSelected(stop.stop_id)
 												}
 											>
 												<BsBoxArrowInRight />

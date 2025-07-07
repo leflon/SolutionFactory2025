@@ -24,6 +24,7 @@ type ItineraryBreakdownPartProps = {
 declare module 'react' {
 	interface CSSProperties {
 		'--border-color'?: string;
+		'--data-index'?: number;
 	}
 }
 const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
@@ -79,10 +80,10 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 			</div>
 			{/* overflow transitions are too complex for plain tailwind, so we use a custom class */}
 			<div className={'middle-stops-container' + (isOpen ? ' open' : '')}>
-				{segment.stops.slice(1, -1).map((stop) => (
+				{segment.stops.slice(1, -1).map((stop, i) => (
 					<div
 						className='my-2 pl-3 text-xs text-gray-600 dark:text-gray-300 has-stop-indicator small-indicator'
-						style={{ '--border-color': segment.line.color }}
+						style={{ '--border-color': segment.line.color, '--data-index': i }}
 						data-displayed={isOpen}
 						key={stop.id}
 					>
@@ -111,9 +112,9 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 			<div
 				className={
 					'flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg' +
-					(itinerary.segments.length > 2
+					(itinerary.segments.length > 1
 						? ' overflow-x-auto justify-start'
-						: ' justify-center')
+						: ' justify-center overflow-hidden')
 				}
 			>
 				{itinerary.segments.map((segment, i) => (
