@@ -40,37 +40,36 @@ export function getMetroNetwork(): MetroNetwork {
 	};
 	const getTimings = db.prepare(
 		`
-		SELECT
-			st.stop_id AS current_stop_id,
-			s.name as current_stop_name,
-			s.latitude as current_latitude,
-			s.longitude as current_longitude,
-			s.parent_station as current_parent_station,
-			min(st.departure_time) AS current_departure_time,
-			r.route_id as current_line_id,
-			r.name as current_line_name,
-			r.background_color as current_line_color,
+		SELECT st.stop_id AS current_stop_id,
+       s.name AS current_stop_name,
+       s.latitude AS current_latitude,
+       s.longitude AS current_longitude,
+       s.parent_station AS current_parent_station,
+       st.departure_time AS current_departure_time,
+       r.route_id AS current_line_id,
+       r.name AS current_line_name,
+       r.background_color AS current_line_color,
 
-			st2.stop_id AS next_stop_id,
-			min(st2.departure_time) AS next_departure_time
-		FROM
-			StopTimes st
-		JOIN
-			Stops s ON st.stop_id = s.stop_id
-		JOIN
-			Trips t ON st.trip_id = t.trip_id
-		JOIN
-			Routes r ON r.route_id = t.route_id
-		JOIN
-			StopTimes st2 ON st.trip_id = st2.trip_id
-			AND (st.stop_sequence = st2.stop_sequence - 1 OR st.stop_sequence = st2.stop_sequence + 1)
-		WHERE
-			st.departure_time IS NOT NULL AND st2.departure_time IS NOT NULL
-		GROUP BY
-			current_stop_id,
-			next_stop_id
-		ORDER BY
-			st.trip_id, st.stop_sequence
+       COALESCE(stm1.stop_id, stp1.stop_id) AS next_stop_id,
+       COALESCE(stm1.departure_time, stp1.departure_time) AS next_departure_time
+  FROM StopTimes st
+       JOIN
+       	Stops s ON st.stop_id = s.stop_id
+       JOIN
+       	Routes r ON r.route_id = s.route_id
+       LEFT JOIN
+       	StopTimes stm1 ON st.trip_id = stm1.trip_id AND st.stop_sequence = stm1.stop_sequence - 1
+       LEFT JOIN
+       	StopTimes stp1 ON st.trip_id = stp1.trip_id AND st.stop_sequence = stp1.stop_sequence + 1
+                           AND stm1.trip_id IS NULL
+
+ WHERE current_departure_time IS NOT NULL AND
+       next_departure_time IS NOT NULL
+ GROUP BY current_stop_id,
+          next_stop_id
+ ORDER BY st.trip_id,
+          st.stop_sequence;
+
 	`
 	);
 
@@ -127,18 +126,9 @@ export function getMetroNetwork(): MetroNetwork {
 		if (!edges[transfer.from_id]) {
 			edges[transfer.from_id] = [];
 		}
-		if (!edges[transfer.to_id]) {
-			edges[transfer.to_id] = [];
-		}
 		edges[transfer.from_id].push({
 			fromId: transfer.from_id,
 			toId: transfer.to_id,
-			duration: transfer.time,
-			isTransfer: true
-		});
-		edges[transfer.to_id].push({
-			fromId: transfer.to_id,
-			toId: transfer.from_id,
 			duration: transfer.time,
 			isTransfer: true
 		});
@@ -365,7 +355,7 @@ export function getItineraryDijkstra(
 	}
 
 	// Convert path to Itinerary segments
-	const segments: ItinerarySegment[] = [];
+	let segments: ItinerarySegment[] = [];
 	let currentSegment: ItinerarySegment | null = null;
 
 	for (let i = 0; i < path.length; i++) {
@@ -396,7 +386,7 @@ export function getItineraryDijkstra(
 				},
 				direction: '', // We'll set this based on the next stop
 				connectingDuration: isFirstStop
-					? 0
+					? undefined
 					: pathNode.edge?.isTransfer
 						? pathNode.edge.duration
 						: 0
@@ -438,8 +428,7 @@ export function getItineraryDijkstra(
 	if (currentSegment) {
 		segments.push(currentSegment);
 	}
-
-	segments.filter((segment) => segment.stops.length > 1);
+	segments = segments.filter((segment) => segment.stops.length > 1);
 
 	return {
 		segments
