@@ -6,11 +6,14 @@ import {
 	CircleMarker,
 	GeoJSON,
 	MapContainer,
+	Polyline,
 	Popup,
 	TileLayer,
 	useMapEvents,
-	ZoomControl,
+	ZoomControl
 } from 'react-leaflet';
+import { Itinerary, MetroNetwork } from '@/lib/types';
+import next from 'next';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 
@@ -25,14 +28,20 @@ type Stop = {
 };
 
 type InteractiveMapProps = {
+	customGraph?: MetroNetwork;
+	itinerary?: Itinerary;
 	onDepartureSelected?: (stopId: string) => any;
+	onDestinationSelected?: (stopId: string) => any;
 	onArrivalSelected?: (stopId: string) => any;
 	stationToZoom?: string | null;
 	onZoomEnd?: () => void;
 };
 
 export default function InteractiveMap({
+	customGraph,
+	itinerary,
 	onDepartureSelected,
+	onDestinationSelected,
 	onArrivalSelected,
 	stationToZoom,
 	onZoomEnd
@@ -56,7 +65,6 @@ export default function InteractiveMap({
 		fetch('/api/stops')
 			.then((res) => res.json())
 			.then((data) => {
-				console.log('Fetched stops:', data.stops);
 				setStops(data.stops);
 			});
 	}, []);
@@ -110,21 +118,123 @@ export default function InteractiveMap({
 		useMapEvents({
 			zoomend: (e) => {
 				setCurrentZoom(e.target.getZoom());
-			},
+			}
 		});
 		return null;
 	};
 
 	const currentRadius = calculateRadius(currentZoom);
+	if (customGraph) {
+		return (
+			<div className='relative h-full z-0'>
+				<MapContainer
+					center={DEFAULT_CENTER}
+					zoom={BASE_ZOOM_LEVEL}
+					zoomControl={false}
+					style={{ zIndex: -500, width: '100%', height: '100%' }}
+				>
+					<ZoomControl position='bottomright' />
+					<ZoomHandler />
+					<TileLayer
+						url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+						attribution='&copy; OpenStreetMap contributors | &copy; IDFM'
+					/>
+					{Object.values(customGraph.nodes).map((stop) => (
+						<CircleMarker
+							key={stop.id}
+							center={[stop.longitude, stop.latitude]}
+							radius={5}
+							pathOptions={{
+								color: '#' + stop.line.color,
+								fillColor: '#' + stop.line.color,
+								fillOpacity: 1
+							}}
+						>
+							<Popup>
+								<h1>{stop.id}</h1>
+								<h2>{stop.name}</h2>
+							</Popup>
+						</CircleMarker>
+					))}
+					{Object.values(customGraph.edges).map((edges) =>
+						edges.map((edge) => {
+							const from = customGraph.nodes[edge.fromId];
+							const to = customGraph.nodes[edge.toId];
+							if (!from || !to) return <React.Fragment></React.Fragment>;
+							return (
+								<Polyline
+									key={from.id + to.id + Math.random()}
+									positions={[
+										[from.longitude, from.latitude],
+										[to.longitude, to.latitude]
+									]}
+									pathOptions={{
+										color: edge.isTransfer ? '#000' : '#' + from.line.color
+									}}
+								>
+									<Popup>
+										<div>Duration: {String(edge.duration)}s</div>
+										<div>Transfer: {String(edge.isTransfer)}</div>
+									</Popup>
+								</Polyline>
+							);
+						})
+					)}
+				</MapContainer>
+			</div>
+		);
+	}
 
+	let itineraryLines: React.ReactNode[] = [];
+	let itineraryMarkers: React.ReactNode[] = [];
+	if (itinerary) {
+		itinerary.segments.forEach((segment) =>
+			segment.stops.forEach((stop, i) => {
+				const currentStop = stops.find((s) => s.name === stop.name);
+				let line;
+				if (i < segment.stops.length - 1) {
+					const nextStop = stops.find(
+						(s) => s.name === segment.stops[i + 1].name
+					);
+					if (currentStop && nextStop)
+						itineraryLines.push(
+							<Polyline
+								key={currentStop.stop_id + nextStop.stop_id}
+								positions={[
+									[currentStop.latitude, currentStop.longitude],
+									[nextStop.latitude, nextStop.longitude]
+								]}
+								pathOptions={{
+									color: '#' + segment.line.color,
+									weight: 10
+								}}
+							/>
+						);
+				}
+				const isBig = i === 0 || i === segment.stops.length - 1;
+				if (!currentStop) return;
+				itineraryMarkers.push(
+					<CircleMarker
+						center={[currentStop.latitude, currentStop.longitude]}
+						radius={isBig ? currentRadius : 3}
+						pathOptions={{
+							fillColor: isBig ? '#fff' : '#000',
+							fillOpacity: 1,
+							color: '#000',
+							weight: isBig ? currentRadius / 2 : 0
+						}}
+					/>
+				);
+			})
+		);
+	}
 	return (
 		<div className='relative h-full z-0'>
 			<MapContainer
 				center={DEFAULT_CENTER}
 				zoom={BASE_ZOOM_LEVEL}
 				zoomControl={false}
-				style={{ zIndex: -500, width: '100%', height: '100%' }}
-				ref={mapRef}
+				style={{ width: '100%', height: '100%' }}
 			>
 				<ZoomControl position='bottomright' />
 				<ZoomHandler />
@@ -132,28 +242,34 @@ export default function InteractiveMap({
 					url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 					attribution='&copy; OpenStreetMap contributors | &copy; IDFM'
 				/>
-				{routePaths && (
+				{itinerary && (
+					<>
+						{itineraryLines}
+						{itineraryMarkers}
+					</>
+				)}
+				{routePaths && !itinerary && (
 					<GeoJSON
 						data={routePaths}
 						style={(feature) => ({
 							weight: 2 + currentRadius / 2,
 							color: '#' + feature!.properties.colourweb_hexa,
-							lineJoin: 'round',
+							lineJoin: 'round'
 						})}
 					/>
 				)}
 				{currentZoom > 10 &&
+					!itinerary &&
 					uniqueStops.map((stop) => {
 						const lines = stop.route_names;
 						const colors = stop.route_colors.map((color) =>
-							color.startsWith('#') ? color : `#${color}`,
+							color.startsWith('#') ? color : `#${color}`
 						);
 						const textColors = stop.route_text_colors.map((color) =>
-							color.startsWith('#') ? color : `#${color}`,
+							color.startsWith('#') ? color : `#${color}`
 						);
 						const mainColor = colors[0] || '#3388ff';
 						const isMultipleRoutes = stop.route_names.length > 1;
-						console.log(currentRadius);
 						return (
 							<React.Fragment key={stop.stop_id}>
 								<CircleMarker
@@ -163,7 +279,7 @@ export default function InteractiveMap({
 										color: isMultipleRoutes ? '#000' : mainColor, // border color
 										weight: currentRadius / 3,
 										fillColor: isMultipleRoutes ? '#fff' : mainColor, // fill color
-										fillOpacity: 1,
+										fillOpacity: 1
 									}}
 								>
 									<Popup className='relative'>
@@ -200,7 +316,8 @@ export default function InteractiveMap({
 											<span className='!w-px h-3 bg-black !p-0 pointer-events-none'></span>
 											<button
 												onClick={() =>
-													onArrivalSelected && onArrivalSelected(stop.stop_id)
+													onDestinationSelected &&
+													onDestinationSelected(stop.stop_id)
 												}
 											>
 												<BsBoxArrowInRight />

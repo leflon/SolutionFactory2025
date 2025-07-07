@@ -8,6 +8,8 @@
 	"ItineraryBreakdown": {
 		"duration": "{{duration}} min",
 		"direction": "Direction <b>{{direction}}</b>",
+		"carbonTooltip": "Empreinte carbone estimée, sachant que l'empreinte carbone moyenne par passager par kilomètre est de 3.8gCO2e par kilomètre (source : RATP)",
+		"carbon": "Empreinte carbone : ",
 		"stops": {
 			"one": "{{count}} arrêt",
 			"other": "{{count}} arrêts"
@@ -18,5 +20,12 @@
 	},
 	"Map": {
 		"lines": "Lignes:"
+	},
+	"ItineraryPreview": {
+		"bestCarbon": "Empreinte carbone optimale",
+		"criterion": {
+			"duration": "Le plus rapide",
+			"transfers": "Moins de correspondances"
+		}
 	}
 }

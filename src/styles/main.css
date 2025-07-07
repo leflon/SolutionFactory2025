@@ -26,7 +26,6 @@ body {
 }
 
 .line-indicator {
-	z-index: 10;
 	@apply absolute h-[95%] left-0 top-1 w-[6px];
 }
 
@@ -40,8 +39,9 @@ body {
 		&:before {
 			border-color: var(--border-color);
 			opacity: 1;
-			/* Delay is added to account for the parent container overflow delay */
-			transition: opacity 0.3s ease-in-out 0.05s;
+			transition: opacity 0.3s ease-in-out;
+			/* The base 0.05s Delay is added to account for the parent container overflow delay */
+			transition-delay: calc(0.05s + var(--data-index) * 0.05s);
 		}
 
 		&[data-displayed='false'] {
@@ -74,11 +74,35 @@ body {
 	&.open {
 		animation: overflow-in 0.3s linear forwards;
 		/* This is just like height auto, but allows animations */
-		height: calc-size(auto, size);
 		overflow: visible;
 	}
 }
+
+@supports (height: calc-size(auto, size)) {
+	.middle-stops-container.open {
+		height: calc-size(auto, size);
+	}
+}
+
+@supports not (height: calc-size(auto, size)) {
+	.middle-stops-container.open {
+		height: auto;
+	}
+}
+
 /*#endregion*/
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+	filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
 /*#region TrafficInfo */
 @keyframes fadeIn {
 	from {

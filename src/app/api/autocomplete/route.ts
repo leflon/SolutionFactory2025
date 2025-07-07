@@ -1,4 +1,5 @@
 import db from '@/lib/db';
+import { normalizeString } from '@/lib/utils';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -11,6 +12,8 @@ export async function GET(req: NextRequest) {
 			{ status: 400 }
 		);
 	}
+
+	q = normalizeString(q);
 
 	// Grab the stations from the database
 	// GROUP_CONCAT(stop_id) as stop_ids,

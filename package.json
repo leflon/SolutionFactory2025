@@ -12,6 +12,10 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"3": "^2.1.0",
+		"@datastructures-js/priority-queue": "^6.3.3",
+		"heap": "^0.2.7",
+		"next": "^15.3.4",
 		"@google/genai": "^1.7.0",
 		"@heroicons/react": "^2.2.0",
 		"@tailwindcss/postcss": "^4.1.10",
@@ -20,12 +24,15 @@
 		"csv-parse": "^5.6.0",
 		"framer-motion": "^12.22.0",
 		"leaflet": "^1.9.4",
-		"next": "15.3.4",
 		"postcss": "^8.5.6",
 		"react": "^19.0.0",
-		"react-dom": "^19.1.0",
+		"react-dom": "^19.0.0",
 		"react-leaflet": "^5.0.0",
-		"tailwindcss": "^4.1.10"
+		"sqlite": "^5.1.1",
+		"sqlite3": "^5.1.7",
+		"tailwindcss": "^4.1.10",
+		"tinyqueue": "^3.0.0",
+		"ts-node": "^10.9.2"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.13",
@@ -34,6 +41,6 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"react-icons": "^5.5.0",
-		"typescript": "^5"
+		"typescript": "^5.8.3"
 	}
 }

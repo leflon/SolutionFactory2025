@@ -7,7 +7,9 @@
 	},
 	"ItineraryBreakdown": {
 		"duration": "{{duration}} min",
-		"direction": "Towards <b>{{direction}}</b>",
+		"direction": "Direction <b>{{direction}}</b>",
+		"carbonTooltip": "Estimated carbon footprint, knowing that the average carbon footprint per passenger per kilometer is 3.8gCO2e per kilometer (source: RATP)",
+		"carbon": "Carbon footprint: ",
 		"stops": {
 			"one": "{{count}} stop",
 			"other": "{{count}} stops"
@@ -18,5 +20,12 @@
 	},
 	"Map": {
 		"lines": "Lines:"
+	},
+	"ItineraryPreview": {
+		"bestCarbon": "Lowest carbon footprint",
+		"criterion": {
+			"duration": "Quickest",
+			"transfers": "Fewer transfers"
+		}
 	}
 }
