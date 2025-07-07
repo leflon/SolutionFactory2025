@@ -214,7 +214,8 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
 		const {
 			weight: currentWeight,
 			fromNodeId: currentFromNodeId,
-			toNodeId: currentToNodeId
+			toNodeId: currentToNodeId,
+			distance: currentDistance
 		} = pq.dequeue()!;
 
 		// If the 'toNode' is already in the MST, skip this edge
@@ -233,6 +234,7 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
 				fromId: currentFromNodeId,
 				toId: currentToNodeId,
 				duration: currentWeight,
+				distance: currentDistance,
 				isTransfer: false
 			};
 			if (!mst.edges[edgeToAdd.fromId]) {
@@ -286,14 +288,20 @@ export function getItineraryDijkstra(
 	if (fromStopId === toStopId) {
 		return {
 			segments: [],
-			carbonFootprint: 0
+			carbonFootprint: 0,
+			criterion
 		};
 	}
 
+	const fromParent = network.nodes[fromStopId].parentId;
+
 	// Dijkstra's algorithm data structures
+	// `distances` stores the shortest distance from the start node to every other node.
 	const distances: Map<string, number> = new Map();
+	// `previous` stores the preceding node in the shortest path, used for reconstructing the path.
 	const previous: Map<string, { nodeId: string; edge: MetroNetworkEdge }> =
 		new Map();
+	// `visited` keeps track of nodes for which we have found the shortest path.
 	const visited: Set<string> = new Set();
 
 	type QueueItem = {
@@ -301,74 +309,101 @@ export function getItineraryDijkstra(
 		distance: number;
 	};
 
+	// A priority queue to efficiently retrieve the node with the smallest distance.
 	const pq = new PriorityQueue<QueueItem>((a, b) => a.distance - b.distance);
 
-	// Initialize distances
+	// Initialize distances: all nodes are infinitely far initially, except for the start node.
 	for (const nodeId of Object.keys(network.nodes)) {
 		distances.set(nodeId, Infinity);
 	}
+	// The distance to the starting node is 0.
 	distances.set(fromStopId, 0);
 
+	// Add the starting node to the priority queue.
 	pq.enqueue({ nodeId: fromStopId, distance: 0 });
 
+	// Main loop of Dijkstra's algorithm.
 	while (pq.size() > 0) {
+		// Get the node with the smallest distance from the priority queue.
 		const current = pq.dequeue()!;
 
+		// If we've already found the shortest path for this node, skip it.
 		if (visited.has(current.nodeId)) {
 			continue;
 		}
 
+		// Mark the current node as visited.
 		visited.add(current.nodeId);
 
-		// Found destination
+		// If we've reached the destination, we can stop early.
 		if (current.nodeId === toStopId) {
 			break;
 		}
 
-		// Check all neighbors
+		// Explore all neighbors of the current node.
 		const edges = network.edges[current.nodeId] || [];
 		for (const edge of edges) {
+			// Skip neighbors for which we've already found the shortest path.
 			if (visited.has(edge.toId)) {
 				continue;
 			}
-			let newDistance = current.distance + edge.duration;
-			// Make transfers very expensive to force the algorithm to avoid them
-			if (criterion === 'transfers' && edge.isTransfer) newDistance += 1000;
+			let newDistance;
+			if (edge.isTransfer && network.nodes[edge.toId].parentId === fromParent) {
+				// Avoid considering transfers in the departure station, these are just quircks from our data structure.
+				newDistance = 0;
+			} else {
+				// Calculate the new distance to the neighbor through the current node.
+				newDistance = current.distance + edge.duration;
+				// If the optimization criterion is 'transfers', add a heavy penalty for transfers
+				// to prioritize routes with fewer changes.
+				if (criterion === 'transfers' && edge.isTransfer) {
+					newDistance += 1000;
+				} else if (edge.isTransfer) {
+					// For duration-based searches, add a tiny penalty for transfers.
+					// This acts as a tie-breaker, favoring paths with fewer transfers
+					// when durations are otherwise equal.
+					newDistance += 0.001;
+				}
+			}
 
+			// If we found a shorter path to the neighbor, update its distance and predecessor.
 			if (newDistance < distances.get(edge.toId)!) {
 				distances.set(edge.toId, newDistance);
 				previous.set(edge.toId, { nodeId: current.nodeId, edge });
+				// Add the neighbor to the priority queue with its new, shorter distance.
 				pq.enqueue({ nodeId: edge.toId, distance: newDistance });
 			}
 		}
 	}
 
-	// Check if destination is reachable
+	// After the loop, if the destination has no predecessor, it means it's not reachable from the start.
 	if (!previous.has(toStopId) && fromStopId !== toStopId) {
 		console.log('Destination is not reachable');
 		return null;
 	}
 
-	// Reconstruct path
+	// Reconstruct the shortest path by backtracking from the destination to the start.
 	const path: Array<{ nodeId: string; edge?: MetroNetworkEdge }> = [];
 	let currentNodeId = toStopId;
 
+	// Follow the `previous` map to trace the path backwards.
 	while (currentNodeId !== fromStopId) {
 		const prev = previous.get(currentNodeId);
-		if (!prev) break;
+		if (!prev) break; // Should not happen if a path exists.
 
+		// Add the current node and the edge that led to it to the front of the path array.
 		path.unshift({ nodeId: currentNodeId, edge: prev.edge });
 		currentNodeId = prev.nodeId;
 	}
 
-	// Add starting node
+	// Add the starting node to complete the path.
 	path.unshift({ nodeId: fromStopId });
 
 	if (path.length === 0) {
 		return null;
 	}
 
-	// Convert path to Itinerary segments
+	// Convert the reconstructed path of nodes and edges into user-friendly itinerary segments.
 	let segments: ItinerarySegment[] = [];
 	let currentSegment: ItinerarySegment | null = null;
 
@@ -443,6 +478,7 @@ export function getItineraryDijkstra(
 		segments.push(currentSegment);
 	}
 	segments = segments.filter((segment) => segment.stops.length > 1);
+	segments[0].connectingDuration = undefined;
 
 	return {
 		segments,

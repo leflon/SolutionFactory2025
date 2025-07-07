@@ -1,5 +1,6 @@
 import { Itinerary, ItineraryEndpoints } from '@/lib/types';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { MdOutlineSwapCalls } from 'react-icons/md';
 import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
 import ItineraryPreview from './ItineraryPreview';
@@ -48,18 +49,38 @@ const ItinerarySelector = ({
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}
 			</div>
-			<StopSearchInput
-				placeholder={t('ItinerarySelector.departure')}
-				onSelect={(stopId) => setEndpoints({ ...endpoints, departure: stopId })}
-				value={displayedEndpoints.departure}
-			/>
-			<StopSearchInput
-				placeholder={t('ItinerarySelector.destination')}
-				onSelect={(stopId) =>
-					setEndpoints({ ...endpoints, destination: stopId })
-				}
-				value={displayedEndpoints.destination}
-			/>
+			<div className='flex items-center justify-center'>
+				<div className='*:my-1 pl-4'>
+					<StopSearchInput
+						placeholder={t('ItinerarySelector.departure')}
+						onSelect={(stopId) =>
+							setEndpoints({ ...endpoints, departure: stopId })
+						}
+						value={displayedEndpoints.departure}
+					/>
+					<StopSearchInput
+						placeholder={t('ItinerarySelector.destination')}
+						onSelect={(stopId) =>
+							setEndpoints({ ...endpoints, destination: stopId })
+						}
+						value={displayedEndpoints.destination}
+					/>
+				</div>
+				<MdOutlineSwapCalls
+					size={38}
+					className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+					onClick={() => {
+						setEndpoints({
+							departure: endpoints.destination,
+							destination: endpoints.departure
+						});
+						setDisplayedEndpoints({
+							departure: displayedEndpoints.destination,
+							destination: displayedEndpoints.departure
+						});
+					}}
+				/>
+			</div>
 			<button
 				onClick={onRequest}
 				className='cursor-pointer w-32 px-3 py-1 mt-2 border-2
