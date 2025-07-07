@@ -1,4 +1,5 @@
 'use client';
+import MetroLineInfo from '@/components/LineInformation';
 import { t } from '@/lib/i18n';
 import { Itinerary, ItinerarySegment } from '@/lib/types';
 import {
@@ -8,7 +9,6 @@ import {
 	getTotalWalkingDuration
 } from '@/lib/utils';
 import Image from 'next/image';
-import { RiLeafFill } from 'react-icons/ri';
 import { Fragment, useState } from 'react';
 import {
 	MdDirectionsWalk,
@@ -17,8 +17,10 @@ import {
 	MdLocationPin,
 	MdSchedule
 } from 'react-icons/md';
+import { RiLeafFill } from 'react-icons/ri';
 type ItineraryBreakdownPartProps = {
 	segment: ItinerarySegment;
+	onStationClick?: (stationName: string) => void;
 };
 
 // Allows us to inject CSS variables directly from the component template, to style the small stop indicators border color.
@@ -28,7 +30,7 @@ declare module 'react' {
 		'--data-index'?: number;
 	}
 }
-const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
+const ItineraryBreakdownPart = ({ segment, onStationClick }: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
 	return (
@@ -60,6 +62,10 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 						})
 					}}
 				></span>
+				<MetroLineInfo
+				lineName={`${segment.line}`}
+				onStationClick={onStationClick}
+				/>
 			</div>
 			<div
 				className='flex flex-row items-center cursor-pointer'
@@ -105,8 +111,9 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 
 type ItineraryBreakdownProps = {
 	itinerary: Itinerary;
+	onStationClick?: (stationId: string) => void;
 };
-const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
+const ItineraryBreakdown = ({ itinerary, onStationClick }: ItineraryBreakdownProps) => {
 	return (
 		<div className='relative w-full p-4'>
 			<div className='flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg overflow-x-auto'>
@@ -176,7 +183,7 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 							</span>
 						</div>
 					)}
-					<ItineraryBreakdownPart segment={segment} />
+					<ItineraryBreakdownPart segment={segment} onStationClick={onStationClick} />
 				</div>
 			))}
 		</div>

@@ -4,7 +4,13 @@ import InteractiveMap from '@/components/InteractiveMap';
 import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
-import { Itinerary, ItineraryEndpoints, MetroNetwork } from '@/lib/types';
+import TrafficInfo from '@/components/TrafficInfo';
+import {
+	Itinerary,
+	Incident,
+	ItineraryEndpoints,
+	MetroNetwork
+} from '@/lib/types';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
@@ -17,6 +23,13 @@ export default function Home() {
 		undefined
 	);
 	const [selectedItinerary, setSelectedItinerary] = useState(-1);
+
+	const [trafficInfo, setTrafficInfo] = useState<{
+		incidents: Incident[];
+		lastUpdate: Date;
+	} | null>(null);
+
+	const [stationToZoom, setStationToZoom] = useState<string | null>(null);
 
 	useEffect(() => {
 		fetch('/api/network')
@@ -36,7 +49,15 @@ export default function Home() {
 		setSelectedItinerary(-1);
 	};
 
-	console.log(itineraries);
+	const fetchIncidents = async () => {
+		const res = await fetch('/api/traffic');
+		const json = await res.json();
+		setTrafficInfo({
+			incidents: json.incidents,
+			lastUpdate: new Date(json.lastUpdate)
+		});
+	};
+	useEffect(() => void fetchIncidents(), []); // Fetch incidents automatically only once, on component mount.
 
 	return (
 		<>
@@ -54,6 +75,16 @@ export default function Home() {
 				selectedItinerary={selectedItinerary}
 				setSelectedItinerary={setSelectedItinerary}
 			/>
+			{trafficInfo && (
+				<div className='z-50 fixed bottom-4 w-full'>
+					<div className='mx-auto w-1/2'>
+						<TrafficInfo
+							incidents={trafficInfo.incidents}
+							lastUpdate={trafficInfo.lastUpdate}
+						/>
+					</div>
+				</div>
+			)}
 			<InteractiveMap
 				itinerary={
 					selectedItinerary !== -1 && itineraries

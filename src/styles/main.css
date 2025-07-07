@@ -31,7 +31,7 @@ body {
 
 /*#region ItineraryBreakdown */
 .has-stop-indicator {
-	@apply relative before:absolute before:size-[14px] before:left-[-20px] before:top-[1px] before:rounded-full before:bg-white before:border-2 dark:before:border-black;
+	@apply relative before:z-10 before:absolute before:size-[14px] before:left-[-20px] before:top-[1px] before:rounded-full before:bg-white before:border-2 dark:before:border-black;
 
 	&.small-indicator {
 		@apply before:size-[12px] before:left-[-19px] before:top-[2px];
@@ -83,6 +83,7 @@ body {
 		height: calc-size(auto, size);
 	}
 }
+
 @supports not (height: calc-size(auto, size)) {
 	.middle-stops-container.open {
 		height: auto;
@@ -100,4 +101,11 @@ body {
 * {
 	scrollbar-width: thin;
 	scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+/*#region TrafficInfo */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
 }

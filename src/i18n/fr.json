@@ -15,6 +15,9 @@
 			"other": "{{count}} arrêts"
 		}
 	},
+	"TrafficInfo": {
+		"lastUpdate": "Dernière mise à jour: {{time}}"
+	},
 	"Map": {
 		"lines": "Lignes:"
 	},

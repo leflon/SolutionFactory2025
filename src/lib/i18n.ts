@@ -5,7 +5,7 @@ import fr from '../i18n/fr.json';
 export type Language = 'en' | 'fr';
 export const LanguageLabels: Record<Language, string> = {
 	en: 'English',
-	fr: 'Français',
+	fr: 'Français'
 };
 
 // Makes LocaleRecord recursive, accepting infinitely nested entries
@@ -14,7 +14,7 @@ type LocaleRecord = { [key: string]: LocaleEntry };
 
 const locales: Record<Language, LocaleRecord> = {
 	en,
-	fr,
+	fr
 };
 
 /**

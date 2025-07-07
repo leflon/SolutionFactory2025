@@ -15,6 +15,9 @@
 			"other": "{{count}} stops"
 		}
 	},
+	"TrafficInfo": {
+		"lastUpdate": "Last update: {{time}}"
+	},
 	"Map": {
 		"lines": "Lines:"
 	},
