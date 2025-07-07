@@ -10,52 +10,6 @@ import {
 } from './types';
 import { timeStringToSeconds } from './utils';
 
-//#region Itinerary Datatype helper functions
-export function getSegmentDurationInMinutes(segment: ItinerarySegment): number {
-	// Rounding up to the nearest minute, we rather have a longer duration than a shorter one
-	// It avoids underestimating the time needed for an itinerary.
-	return Math.ceil(
-		segment.stops.reduce((acc, stop) => acc + stop.duration, 0) / 60
-	);
-}
-
-export function getTotalDuration(itinerary: Itinerary): number {
-	return itinerary.segments.reduce(
-		(acc, segment) =>
-			acc +
-			segment.stops.reduce((acc, stop) => acc + stop.duration, 0) +
-			(segment.connectingDuration ?? 0),
-		0
-	);
-}
-
-export function getTotalDistance(itinerary: Itinerary): number {
-	return itinerary.segments.reduce(
-		(acc, segment) =>
-			acc + segment.stops.reduce((acc, stop) => acc + stop.distance, 0),
-		0
-	);
-}
-
-export function getTotalWalkingDuration(itinerary: Itinerary): number {
-	return itinerary.segments.reduce(
-		(acc, segment) => acc + (segment.connectingDuration ?? 0),
-		0
-	);
-}
-
-export function getTotalStops(itinerary: Itinerary): number {
-	return itinerary.segments.reduce(
-		(acc, segment) => acc + segment.stops.length,
-		0
-	);
-}
-
-export function getTotalTransfers(itinerary: Itinerary): number {
-	return itinerary.segments.length - 1;
-}
-//#endregion
-
 //#region Metro graph construction
 
 // Cached metroNetwork
@@ -109,7 +63,7 @@ export function getMetroNetwork(): MetroNetwork {
 			Routes r ON r.route_id = t.route_id
 		JOIN
 			StopTimes st2 ON st.trip_id = st2.trip_id
-			AND st.stop_sequence = st2.stop_sequence - 1
+			AND (st.stop_sequence = st2.stop_sequence - 1 OR st.stop_sequence = st2.stop_sequence + 1)
 		WHERE
 			st.departure_time IS NOT NULL AND st2.departure_time IS NOT NULL
 		GROUP BY
@@ -139,9 +93,10 @@ export function getMetroNetwork(): MetroNetwork {
 		if (!edges[timing.current_stop_id]) {
 			edges[timing.current_stop_id] = [];
 		}
-		const duration =
+		const duration = Math.abs(
 			timeStringToSeconds(timing.next_departure_time) -
-			timeStringToSeconds(timing.current_departure_time);
+				timeStringToSeconds(timing.current_departure_time)
+		);
 		edges[timing.current_stop_id].push({
 			fromId: timing.current_stop_id,
 			toId: timing.next_stop_id,
@@ -154,7 +109,7 @@ export function getMetroNetwork(): MetroNetwork {
 	const transfers = db
 		.prepare(
 			`
-		SELECT * FROM Transfers t
+		SELECT t.* FROM Transfers t
 		JOIN
 			Stops s1 ON t.from_id = s1.stop_id
 		JOIN
@@ -165,7 +120,7 @@ export function getMetroNetwork(): MetroNetwork {
 		.all() as {
 		from_id: string;
 		to_id: string;
-		duration: number;
+		time: number;
 	}[];
 
 	for (const transfer of transfers) {
@@ -178,13 +133,13 @@ export function getMetroNetwork(): MetroNetwork {
 		edges[transfer.from_id].push({
 			fromId: transfer.from_id,
 			toId: transfer.to_id,
-			duration: transfer.duration,
+			duration: transfer.time,
 			isTransfer: true
 		});
 		edges[transfer.to_id].push({
 			fromId: transfer.to_id,
 			toId: transfer.from_id,
-			duration: transfer.duration,
+			duration: transfer.time,
 			isTransfer: true
 		});
 	}
@@ -202,6 +157,8 @@ interface PrimQueueEntry {
 	toNodeId: string; // The node to which this edge leads
 }
 
+let cachedMst: MetroNetwork | null = null;
+
 /**
  * Implements Prim's algorithm to find the Minimum Spanning Tree (MST) of a MetroNetwork.
  * This implementation assumes the graph is *unidirectional* as per MetroNetworkEdge definition,
@@ -213,6 +170,7 @@ interface PrimQueueEntry {
  * @returns A MetroNetwork representing the MST, or null if the network is empty.
  */
 export function getMinimumSpanningTree(): MetroNetwork | null {
+	if (cachedMst) return cachedMst;
 	const network = getMetroNetwork();
 	const nodeIds = Object.keys(network.nodes);
 
@@ -306,6 +264,182 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
 		// Depending on requirements, you might return null or the partial MST.
 		// Here, we return the partial MST found.
 	}
-
+	cachedMst = mst;
 	return mst;
+}
+
+/**
+ * Finds the shortest path between two stops using Dijkstra's algorithm
+ * @param fromStopId - The ID of the departure stop
+ * @param toStopId - The ID of the destination stop
+ * @returns An Itinerary object representing the shortest path, or null if no path exists
+ */
+export function getItineraryDijkstra(
+	fromStopId: string,
+	toStopId: string
+): Itinerary | null {
+	const network = getMetroNetwork();
+
+	if (fromStopId === toStopId) {
+		return {
+			segments: []
+		};
+	}
+
+	// Dijkstra's algorithm data structures
+	const distances: Map<string, number> = new Map();
+	const previous: Map<string, { nodeId: string; edge: MetroNetworkEdge }> =
+		new Map();
+	const visited: Set<string> = new Set();
+
+	type QueueItem = {
+		nodeId: string;
+		distance: number;
+	};
+
+	const pq = new PriorityQueue<QueueItem>((a, b) => a.distance - b.distance);
+
+	// Initialize distances
+	for (const nodeId of Object.keys(network.nodes)) {
+		distances.set(nodeId, Infinity);
+	}
+	distances.set(fromStopId, 0);
+
+	pq.enqueue({ nodeId: fromStopId, distance: 0 });
+
+	while (pq.size() > 0) {
+		const current = pq.dequeue()!;
+		console.log(network.nodes[current.nodeId].name);
+
+		if (visited.has(current.nodeId)) {
+			continue;
+		}
+
+		visited.add(current.nodeId);
+
+		// Found destination
+		if (current.nodeId === toStopId) {
+			break;
+		}
+
+		// Check all neighbors
+		const edges = network.edges[current.nodeId] || [];
+		for (const edge of edges) {
+			if (visited.has(edge.toId)) {
+				continue;
+			}
+
+			const newDistance = current.distance + edge.duration;
+
+			if (newDistance < distances.get(edge.toId)!) {
+				distances.set(edge.toId, newDistance);
+				previous.set(edge.toId, { nodeId: current.nodeId, edge });
+				pq.enqueue({ nodeId: edge.toId, distance: newDistance });
+			}
+		}
+	}
+
+	// Check if destination is reachable
+	if (!previous.has(toStopId) && fromStopId !== toStopId) {
+		console.log('Destination is not reachable');
+		return null;
+	}
+
+	// Reconstruct path
+	const path: Array<{ nodeId: string; edge?: MetroNetworkEdge }> = [];
+	let currentNodeId = toStopId;
+
+	while (currentNodeId !== fromStopId) {
+		const prev = previous.get(currentNodeId);
+		if (!prev) break;
+
+		path.unshift({ nodeId: currentNodeId, edge: prev.edge });
+		currentNodeId = prev.nodeId;
+	}
+
+	// Add starting node
+	path.unshift({ nodeId: fromStopId });
+
+	if (path.length === 0) {
+		return null;
+	}
+
+	// Convert path to Itinerary segments
+	const segments: ItinerarySegment[] = [];
+	let currentSegment: ItinerarySegment | null = null;
+
+	for (let i = 0; i < path.length; i++) {
+		const pathNode = path[i];
+		const node = network.nodes[pathNode.nodeId];
+
+		if (!node) continue;
+
+		const isFirstStop = i === 0;
+
+		// If this is the first stop or we're changing lines, start a new segment
+		if (
+			isFirstStop ||
+			(currentSegment && currentSegment.line.id !== node.line.id)
+		) {
+			// Finish previous segment if exists
+			if (currentSegment && !isFirstStop) {
+				segments.push(currentSegment);
+			}
+
+			// Start new segment
+			currentSegment = {
+				stops: [],
+				line: {
+					id: node.line.id,
+					name: node.line.name,
+					color: node.line.color
+				},
+				direction: '', // We'll set this based on the next stop
+				connectingDuration: isFirstStop
+					? 0
+					: pathNode.edge?.isTransfer
+						? pathNode.edge.duration
+						: 0
+			};
+		}
+
+		if (currentSegment) {
+			// Add stop to current segment
+			const stopDuration = pathNode.edge ? pathNode.edge.duration : 0;
+			const stopDistance = pathNode.edge ? pathNode.edge.duration * 10 : 0; // Estimate distance from time
+
+			// Avoids duplicates
+			// Since two platforms within the same station are considered distinct stops,
+			// We can sometimes have a path from one platform to the other, which is not relevant to the user.
+			if (
+				node.name ===
+				currentSegment.stops[currentSegment.stops.length - 1]?.name
+			)
+				continue;
+
+			currentSegment.stops.push({
+				id: pathNode.nodeId,
+				name: node.name,
+				duration: stopDuration,
+				distance: stopDistance
+			});
+
+			// Set direction for the segment if we have a next stop
+			if (currentSegment.direction === '' && i < path.length - 1) {
+				const nextNode = network.nodes[path[i + 1].nodeId];
+				if (nextNode) {
+					currentSegment.direction = nextNode.name;
+				}
+			}
+		}
+	}
+
+	// Add the last segment
+	if (currentSegment) {
+		segments.push(currentSegment);
+	}
+
+	return {
+		segments
+	};
 }

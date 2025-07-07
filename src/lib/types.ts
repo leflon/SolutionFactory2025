@@ -21,9 +21,11 @@ export interface ItinerarySegment {
 		distance: number;
 	}[];
 	/* The line of the segment */
-	line: string;
-	/* The color of the line in hex format */
-	lineColor: string;
+	line: {
+		id: string;
+		name: string;
+		color: string;
+	};
 	/* The direction to take on the line for this segment */
 	direction: string;
 	/* The time in seconds it takes to change lines from the previous segment to this segment

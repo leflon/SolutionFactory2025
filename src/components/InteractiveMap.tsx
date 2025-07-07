@@ -135,20 +135,20 @@ export default function InteractiveMap({
 						edges.map((edge) => {
 							const from = minimumSpanningTree.nodes[edge.fromId];
 							const to = minimumSpanningTree.nodes[edge.toId];
-							if (!from || !to) return <></>;
+							if (!from || !to) return <React.Fragment></React.Fragment>;
 							return (
 								<Polyline
-									key={from.id + to.id}
+									key={from.id + to.id + Math.random()}
 									positions={[
 										[from.longitude, from.latitude],
 										[to.longitude, to.latitude]
 									]}
 									pathOptions={{
-										color: edge.isTransfer ? '#000;' : '#' + from.line.color
+										color: edge.isTransfer ? '#000' : '#' + from.line.color
 									}}
 								>
 									<Popup>
-										<div>Duration: {edge.duration}s</div>
+										<div>Duration: {String(edge.duration)}s</div>
 										<div>Transfer: {String(edge.isTransfer)}</div>
 									</Popup>
 								</Polyline>

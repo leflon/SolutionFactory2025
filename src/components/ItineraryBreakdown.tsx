@@ -1,23 +1,21 @@
 'use client';
+import { t } from '@/lib/i18n';
+import { Itinerary, ItinerarySegment } from '@/lib/types';
 import {
 	getSegmentDurationInMinutes,
-	getTotalDistance,
 	getTotalDuration,
 	getTotalStops,
-	getTotalWalkingDuration,
-	Itinerary,
-	ItinerarySegment,
-} from '@/lib/Itinerary';
+	getTotalWalkingDuration
+} from '@/lib/utils';
+import Image from 'next/image';
+import { Fragment, useState } from 'react';
 import {
 	MdDirectionsWalk,
 	MdKeyboardArrowDown,
 	MdKeyboardArrowRight,
-	MdSchedule,
 	MdLocationPin,
+	MdSchedule
 } from 'react-icons/md';
-import Image from 'next/image';
-import { Fragment, useState } from 'react';
-import { t } from '@/lib/i18n';
 type ItineraryBreakdownPartProps = {
 	segment: ItinerarySegment;
 };
@@ -31,20 +29,25 @@ declare module 'react' {
 const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
-
+	console.log(segment);
 	return (
 		<div className='relative pl-4'>
 			<div
 				className='line-indicator'
-				style={{ backgroundColor: segment.lineColor }}
+				style={{ backgroundColor: '#' + segment.line.color }}
 			></div>
-			<div className='font-bold leading-none has-stop-indicator'>
-				{segment.stops[0].name}
+			<div
+				className='font-bold leading-none has-stop-indicator'
+				title={segment.stops[0].name}
+			>
+				<span className='block whitespace-nowrap overflow-ellipsis w-full overflow-hidden'>
+					{segment.stops[0].name}
+				</span>
 			</div>
 			<div className='py-2 flex flex-row gap-2 items-center'>
 				<Image
-					src={`/metros/${segment.line}.png`}
-					alt={segment.line}
+					src={`/metros/${segment.line.name}.png`}
+					alt={segment.line.name}
 					width={18}
 					height={18}
 					className='shrink-0 grow-0 w-max-content'
@@ -52,8 +55,8 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 				<span
 					dangerouslySetInnerHTML={{
 						__html: t('ItineraryBreakdown.direction', {
-							direction: segment.direction,
-						}),
+							direction: segment.direction
+						})
 					}}
 				></span>
 			</div>
@@ -64,7 +67,11 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 				<MdKeyboardArrowDown
 					size={18}
 					className={
-						(isOpen ? 'rotate-180' : '') + ' transition-transform duration-300'
+						(isOpen ? 'rotate-180' : '') +
+						' transition-transform duration-300' +
+						(segment.stops.length < 3
+							? ' opacity-0' /* Hides the arrow since there is nothing to show, but keeps alignment. */
+							: '')
 					}
 				/>
 				{t('ItineraryBreakdown.duration', { duration })} (
@@ -75,7 +82,7 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 				{segment.stops.slice(1, -1).map((stop) => (
 					<div
 						className='my-2 pl-3 text-xs text-gray-600 dark:text-gray-300 has-stop-indicator small-indicator'
-						style={{ '--border-color': segment.lineColor }}
+						style={{ '--border-color': segment.line.color }}
 						data-displayed={isOpen}
 						key={stop.id}
 					>
@@ -83,8 +90,13 @@ const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 					</div>
 				))}
 			</div>
-			<div className='font-bold leading-none has-stop-indicator mt-4'>
-				{segment.stops[segment.stops.length - 1].name}
+			<div
+				className='font-bold leading-none has-stop-indicator mt-4'
+				title={segment.stops[segment.stops.length - 1].name}
+			>
+				<span className='block whitespace-nowrap overflow-ellipsis w-full overflow-hidden'>
+					{segment.stops[segment.stops.length - 1].name}
+				</span>
 			</div>
 		</div>
 	);
@@ -105,8 +117,8 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 				}
 			>
 				{itinerary.segments.map((segment, i) => (
-					<Fragment key={segment.line}>
-						{segment.connectingDuration && (
+					<Fragment key={segment.line.id}>
+						{segment.connectingDuration !== undefined && (
 							<>
 								<div className='text-xs flex flex-row items-center'>
 									<MdDirectionsWalk size={18} />
@@ -118,8 +130,8 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 							</>
 						)}
 						<Image
-							src={`/metros/${segment.line}.png`}
-							alt={segment.line}
+							src={`/metros/${segment.line.name}.png`}
+							alt={segment.line.name}
 							width={18}
 							height={18}
 						/>
@@ -133,13 +145,13 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 				<div>
 					<MdSchedule size={18} />
 					{t('ItineraryBreakdown.duration', {
-						duration: Math.ceil(getTotalDuration(itinerary) / 60),
+						duration: Math.ceil(getTotalDuration(itinerary) / 60)
 					})}
 				</div>
 				<div>
 					<MdDirectionsWalk size={18} />
 					{t('ItineraryBreakdown.duration', {
-						duration: Math.ceil(getTotalWalkingDuration(itinerary) / 60),
+						duration: Math.ceil(getTotalWalkingDuration(itinerary) / 60)
 					})}
 				</div>
 				<div>
@@ -148,7 +160,7 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 				</div>
 			</div>
 			{itinerary.segments.map((segment, i) => (
-				<div key={segment.line}>
+				<div key={segment.line.id}>
 					{i !== 0 && (
 						<div className='h-12 border-l-6 border-dotted border-blue-500 my-1 pl-2 flex flex-row items-center gap-1'>
 							<MdDirectionsWalk size={18} />
