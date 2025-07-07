@@ -5,6 +5,7 @@ import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import TrafficInfo from '@/components/TrafficInfo';
+<<<<<<< HEAD
 import {
 	Itinerary,
 	Incident,
@@ -24,6 +25,16 @@ export default function Home() {
 	);
 	const [selectedItinerary, setSelectedItinerary] = useState(-1);
 
+=======
+import InteractiveMap from '@/components/InteractiveMap';
+import dynamic from 'next/dynamic';
+import { t } from '@/lib/i18n';
+import { PLACEHOLDER_ITINERARY } from '@/lib/Itinerary';
+import { Incident, ItineraryEndpoints } from '@/lib/types';
+import { useEffect, useState } from 'react';
+
+export default function Home() {
+>>>>>>> main
 	const [trafficInfo, setTrafficInfo] = useState<{
 		incidents: Incident[];
 		lastUpdate: Date;
@@ -31,6 +42,7 @@ export default function Home() {
 
 	const [stationToZoom, setStationToZoom] = useState<string | null>(null);
 
+<<<<<<< HEAD
 	useEffect(() => {
 		fetch('/api/network')
 			.then((res) => res.json())
@@ -39,6 +51,10 @@ export default function Home() {
 
 	const handleItineraryRequest = () => {
 		console.log('ok?');
+=======
+	const handleItineraryRequest = (endpoints: ItineraryEndpoints) => {
+		console.log('Request: ', endpoints);
+>>>>>>> main
 		// TODO: Implement API call to fetch itinerary based on endpoints
 		if (!endpoints.departure || !endpoints.destination) return;
 		fetch(
@@ -62,6 +78,7 @@ export default function Home() {
 	return (
 		<>
 			<Navbar />
+<<<<<<< HEAD
 			<ItinerarySelector
 				onRequest={handleItineraryRequest}
 				endpoints={endpoints}
@@ -97,6 +114,20 @@ export default function Home() {
 				onDestinationSelected={(id) =>
 					setEndpoints((endpoints) => ({ ...endpoints, destination: id }))
 				}
+=======
+			<ItinerarySelector onRequest={handleItineraryRequest} />
+			<ItineraryBreakdown itinerary={PLACEHOLDER_ITINERARY} onStationClick={setStationToZoom} />
+			<div className='z-50 fixed bottom-5 w-full flex justify-center'>
+				<div className='w-7/12 h-22 flex justify-end items-center drop-shadow-lg'>
+					{trafficInfo && <TrafficInfo {...trafficInfo} />}
+				</div>
+			</div>
+			<InteractiveMap
+				onDepartureSelected={(id) => alert('Departure selected: ' + id)}
+				onArrivalSelected={(id) => alert('Arrival selected: ' + id)}
+				stationToZoom={stationToZoom}
+				onZoomEnd={() => setStationToZoom(null)}
+>>>>>>> main
 			/>
 		</>
 	);
