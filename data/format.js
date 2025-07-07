@@ -72,7 +72,7 @@ db.exec(
 	`CREATE TABLE IF NOT EXISTS StopTimes(trip_id TEXT, departure_time TEXT, stop_id TEXT, stop_sequence INTEGER, PRIMARY KEY (trip_id, stop_id, stop_sequence))`
 );
 db.exec(
-	`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, route_id TEXT, name TEXT, plain_name TEXT, latitude REAL, longitude REAL, zone_id INTEGER, parent_station TEXT, wheelchair_accessible INTEGER)`
+	`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, route_id TEXT, name TEXT, plain_name TEXT, longitude REAL, latitude REAL, zone_id INTEGER, parent_station TEXT, wheelchair_accessible INTEGER)`
 );
 db.exec(
 	`CREATE TABLE IF NOT EXISTS Transfers(from_id TEXT, to_id TEXT, time INTEGER)`

@@ -8,6 +8,7 @@ import {
 	getTotalWalkingDuration
 } from '@/lib/utils';
 import Image from 'next/image';
+import { RiLeafFill } from 'react-icons/ri';
 import { Fragment, useState } from 'react';
 import {
 	MdDirectionsWalk,
@@ -30,7 +31,6 @@ declare module 'react' {
 const ItineraryBreakdownPart = ({ segment }: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
-	console.log(segment);
 	return (
 		<div className='relative pl-4'>
 			<div
@@ -159,6 +159,16 @@ const ItineraryBreakdown = ({ itinerary }: ItineraryBreakdownProps) => {
 					<MdLocationPin size={18} />
 					{t('ItineraryBreakdown.stops', { count: getTotalStops(itinerary) })}
 				</div>
+			</div>
+			<div
+				className='bg-green-400/50 rounded-sm p-1 text-sm flex items-center gap-1 text-green-950 my-2 cursor-help'
+				title={t('ItineraryBreakdown.carbonTooltip')}
+			>
+				<RiLeafFill />
+				<span>
+					{t('ItineraryBreakdown.carbon')}
+					<b>{Math.round(itinerary.carbonFootprint)}g</b>
+				</span>
 			</div>
 			{itinerary.segments.map((segment, i) => (
 				<div key={segment.line.id}>

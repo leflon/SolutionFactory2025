@@ -21,10 +21,7 @@ export default function Home() {
 			.then(setNetwork);
 	}, []);
 
-	console.log(network);
 	const handleItineraryRequest = () => {
-		console.log('allo');
-		console.log(endpoints);
 		// TODO: Implement API call to fetch itinerary based on endpoints
 		if (!endpoints.departure || !endpoints.destination) return;
 		fetch(
@@ -33,6 +30,8 @@ export default function Home() {
 			.then((res) => res.json())
 			.then(setItinerary);
 	};
+
+	console.log(itinerary);
 
 	return (
 		<>

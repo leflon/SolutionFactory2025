@@ -41,6 +41,8 @@ export interface Itinerary {
 	requestedArrivalTime?: Date;
 	/* The segments making up the itinerary */
 	segments: ItinerarySegment[];
+	/* Carbon footprint of this itinerary in gCO2e */
+	carbonFootprint: number;
 }
 
 /**
@@ -67,6 +69,7 @@ export interface MetroNetworkEdge {
 	fromId: string;
 	toId: string; // L'identifiant de la station de destination
 	duration: number; // Le poids de l'arête (temps de parcours en secondes)
+	distance: number;
 	isTransfer: boolean;
 }
 

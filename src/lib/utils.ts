@@ -19,6 +19,24 @@ export function timeStringToSeconds(timeString: string): number {
 	return hours * 3600 + minutes * 60 + seconds;
 }
 
+export function distance(from: [number, number], to: [number, number]): number {
+	const [lon1, lat1] = from;
+	const [lon2, lat2] = to;
+
+	const R = 6371000; // Earth's radius in meters
+	const φ1 = (lat1 * Math.PI) / 180; // φ, λ in radians
+	const φ2 = (lat2 * Math.PI) / 180;
+	const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+	const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+	const a =
+		Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+	return R * c; // Distance in meters
+}
+
 //#region Itinerary Datatype helper functions
 export function getSegmentDurationInMinutes(segment: ItinerarySegment): number {
 	// Rounding up to the nearest minute, we rather have a longer duration than a shorter one
@@ -38,8 +56,8 @@ export function getTotalDuration(itinerary: Itinerary): number {
 	);
 }
 
-export function getTotalDistance(itinerary: Itinerary): number {
-	return itinerary.segments.reduce(
+export function getTotalDistance(segments: ItinerarySegment[]): number {
+	return segments.reduce(
 		(acc, segment) =>
 			acc + segment.stops.reduce((acc, stop) => acc + stop.distance, 0),
 		0

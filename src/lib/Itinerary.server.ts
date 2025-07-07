@@ -8,7 +8,7 @@ import {
 	MetroNetworkEdge,
 	MetroNetworkNode
 } from './types';
-import { timeStringToSeconds } from './utils';
+import { distance, getTotalDistance, timeStringToSeconds } from './utils';
 
 //#region Metro graph construction
 
@@ -37,6 +37,8 @@ export function getMetroNetwork(): MetroNetwork {
 
 		next_stop_id: string;
 		next_departure_time: string;
+		next_longitude: number;
+		next_latitude: number;
 	};
 	const getTimings = db.prepare(
 		`
@@ -51,7 +53,9 @@ export function getMetroNetwork(): MetroNetwork {
        r.background_color AS current_line_color,
 
        COALESCE(stm1.stop_id, stp1.stop_id) AS next_stop_id,
-       COALESCE(stm1.departure_time, stp1.departure_time) AS next_departure_time
+       COALESCE(stm1.departure_time, stp1.departure_time) AS next_departure_time,
+       s2.longitude AS next_longitude,
+       s2.latitude AS next_latitude
   FROM StopTimes st
        JOIN
        	Stops s ON st.stop_id = s.stop_id
@@ -62,6 +66,8 @@ export function getMetroNetwork(): MetroNetwork {
        LEFT JOIN
        	StopTimes stp1 ON st.trip_id = stp1.trip_id AND st.stop_sequence = stp1.stop_sequence + 1
                            AND stm1.trip_id IS NULL
+       JOIN
+       	Stops s2 ON next_stop_id = s2.stop_id
 
  WHERE current_departure_time IS NOT NULL AND
        next_departure_time IS NOT NULL
@@ -100,6 +106,10 @@ export function getMetroNetwork(): MetroNetwork {
 			fromId: timing.current_stop_id,
 			toId: timing.next_stop_id,
 			duration,
+			distance: distance(
+				[timing.current_longitude, timing.current_latitude],
+				[timing.next_longitude, timing.next_latitude]
+			),
 			isTransfer: false
 		});
 	}
@@ -130,6 +140,7 @@ export function getMetroNetwork(): MetroNetwork {
 			fromId: transfer.from_id,
 			toId: transfer.to_id,
 			duration: transfer.time,
+			distance: 0,
 			isTransfer: true
 		});
 	}
@@ -272,7 +283,8 @@ export function getItineraryDijkstra(
 
 	if (fromStopId === toStopId) {
 		return {
-			segments: []
+			segments: [],
+			carbonFootprint: 0
 		};
 	}
 
@@ -299,7 +311,6 @@ export function getItineraryDijkstra(
 
 	while (pq.size() > 0) {
 		const current = pq.dequeue()!;
-		console.log(network.nodes[current.nodeId].name);
 
 		if (visited.has(current.nodeId)) {
 			continue;
@@ -431,6 +442,8 @@ export function getItineraryDijkstra(
 	segments = segments.filter((segment) => segment.stops.length > 1);
 
 	return {
-		segments
+		segments,
+		// 3.8gCO2e per km (https://www.ratp.fr/aide-contact/questions/calculer-son-empreinte-carbone)
+		carbonFootprint: (getTotalDistance(segments) * 3.8) / 1000
 	};
 }

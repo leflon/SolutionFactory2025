@@ -6,8 +6,8 @@ export async function GET(req: NextRequest) {
 		SELECT
 			s.stop_id,
 			s.name,
-			s.longitude AS latitude,
-			s.latitude AS longitude,
+			s.longitude,
+			s.latitude,
 			GROUP_CONCAT(DISTINCT r.name) AS route_names,
 			GROUP_CONCAT(DISTINCT r.background_color) AS route_colors,
 			GROUP_CONCAT(DISTINCT r.text_color) AS route_text_colors
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 			...row,
 			route_names: row.route_names.split(','),
 			route_colors: row.route_colors.split(','),
-			route_text_colors: row.route_text_colors.split(','),
-		})),
+			route_text_colors: row.route_text_colors.split(',')
+		}))
 	});
 }

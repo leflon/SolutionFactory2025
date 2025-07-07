@@ -57,7 +57,6 @@ export default function InteractiveMap({
 		fetch('/api/stops')
 			.then((res) => res.json())
 			.then((data) => {
-				console.log('Fetched stops:', data.stops);
 				setStops(data.stops);
 			});
 	}, []);
@@ -161,7 +160,6 @@ export default function InteractiveMap({
 			</div>
 		);
 	}
-	console.log('update');
 	return (
 		<div className='relative h-full z-0'>
 			<MapContainer
@@ -206,7 +204,6 @@ export default function InteractiveMap({
 						);
 						const mainColor = colors[0] || '#3388ff';
 						const isMultipleRoutes = stop.route_names.length > 1;
-						console.log(currentRadius);
 						return (
 							<React.Fragment key={stop.stop_id}>
 								<CircleMarker
