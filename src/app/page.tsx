@@ -116,9 +116,13 @@ export default function Home() {
 			<div className='hidden md:contents'>
 				<Navbar />
 				{selector}
+				<Chatbot
+					setEndpoints={setEndpoints}
+					loadingItinerary={loadingItinerary}
+				/>
 				{trafficInfo && (
-					<div className='z-50 fixed bottom-5 w-full'>
-						<div className='w-1/2 mx-auto'>
+					<div className='z-50 fixed bottom-5 w-3/4 left-1/2 -translate-x-1/2'>
+						<div className='w-3/4 mx-auto'>
 							<TrafficInfo
 								incidents={trafficInfo.incidents}
 								lastUpdate={trafficInfo.lastUpdate}
@@ -126,10 +130,6 @@ export default function Home() {
 						</div>
 					</div>
 				)}
-				<Chatbot
-					setEndpoints={setEndpoints}
-					loadingItinerary={loadingItinerary}
-				/>
 			</div>
 			<div className='z-50 fixed w-full bottom-0 md:hidden'>
 				<Navbar />

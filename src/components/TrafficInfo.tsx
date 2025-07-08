@@ -203,7 +203,7 @@ const TrafficInfo = ({
 	return (
 		<div
 			className={
-				`box-border relative bg-white dark:bg-gray-800 dark:text-white rounded-2xl border-[1px] border-gray-300 dark:border-gray-600 text-left
+				`z-40 box-border relative bg-white dark:bg-gray-800 dark:text-white rounded-2xl border-[1px] border-gray-300 dark:border-gray-600 text-left
 			flex items-center gap-3 overflow-hidden group ` +
 				(isShrunk
 					? 'cursor-pointer rounded-full size-10 md:size-18 justify-center self-end hover:scale-110 transition-transform'
@@ -224,7 +224,7 @@ const TrafficInfo = ({
 			tabIndex={isShrunk ? 0 : -1}
 		>
 			<button
-				className='z-20 absolute top-1 right-1 !dark:text-white group-hover:opacity-100 md:opacity-0 cursor-pointer focus:opacity-100 rounded-full'
+				className='z-20 absolute top-1 right-1 !dark:text-white md:group-hover:opacity-100 md:opacity-0 cursor-pointer focus:opacity-100 rounded-full'
 				hidden={isShrunk || !shrinkable}
 				onClick={() => setIsShrunk(true)}
 			>
