@@ -99,6 +99,7 @@ export default function Home() {
 			displayMode={displayMode}
 			setDisplayMode={setDisplayMode}
 			isLoading={isLoadingItineraries}
+			incidents={trafficInfo?.incidents}
 			isConnected={
 				displayMode === 'graph' ? network?.isConnected : mst?.isConnected
 			}

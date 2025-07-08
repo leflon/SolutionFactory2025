@@ -1,4 +1,5 @@
 import {
+	Incident,
 	Itinerary,
 	ItineraryEndpoints,
 	ItineraryWithTimings
@@ -27,6 +28,7 @@ type ItinerarySelectorProps = {
 	setTiming: (s: string) => void;
 	displayMode: string;
 	setDisplayMode: Dispatch<SetStateAction<'map' | 'graph' | 'mst'>>;
+	incidents?: Incident[];
 	isConnected?: boolean;
 	onClear: () => void;
 	isLoading?: boolean;
@@ -42,6 +44,7 @@ const ItinerarySelector = ({
 	setSelectedItinerary,
 	setDisplayMode,
 	displayMode,
+	incidents,
 	onClear,
 	isConnected,
 	isLoading
@@ -268,7 +271,10 @@ const ItinerarySelector = ({
 				</div>
 				<div ref={scrollRef} className='size-1'></div>
 				{itineraries && selectedItinerary !== -1 && (
-					<ItineraryBreakdown itinerary={itineraries[selectedItinerary]} />
+					<ItineraryBreakdown
+						incidents={incidents}
+						itinerary={itineraries[selectedItinerary]}
+					/>
 				)}
 			</div>
 		</>

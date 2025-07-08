@@ -2,6 +2,7 @@
 import MetroLineInfo from '@/components/LineInformation';
 import { t } from '@/lib/i18n';
 import {
+	Incident,
 	Itinerary,
 	ItinerarySegment,
 	ItinerarySegmentWithTimings,
@@ -24,9 +25,11 @@ import {
 	MdSchedule
 } from 'react-icons/md';
 import { RiLeafFill } from 'react-icons/ri';
+
 type ItineraryBreakdownPartProps = {
 	segment: ItinerarySegmentWithTimings;
 	onStationClick?: (stationName: string) => void;
+	incidents?: Incident[];
 };
 
 // Allows us to inject CSS variables directly from the component template, to style the small stop indicators border color.
@@ -38,10 +41,17 @@ declare module 'react' {
 }
 const ItineraryBreakdownPart = ({
 	segment,
+	incidents,
 	onStationClick
 }: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
+	const relevantIncidents =
+		incidents &&
+		incidents.filter(
+			(incident) =>
+				incident.line.id === segment.line.id && incident.status === 'active'
+		);
 	return (
 		<div className='relative pl-4 dark:text-white'>
 			<div
@@ -82,6 +92,21 @@ const ItineraryBreakdownPart = ({
 					lineName={`${segment.line.name}`}
 					onStationClick={onStationClick}
 				/>
+			</div>
+			<div>
+				{segment.line.id}
+				{relevantIncidents &&
+					relevantIncidents.map((incident, i) => (
+						<div
+							key={i}
+							className='bg-gray-200 px-2 py-1 rounded my-1'
+							style={{
+								backgroundColor: incident.severity.color + '90'
+							}}
+						>
+							{incident.shortMessage}
+						</div>
+					))}
 			</div>
 			<div
 				className='flex flex-row items-center cursor-pointer'
@@ -130,10 +155,12 @@ const ItineraryBreakdownPart = ({
 
 type ItineraryBreakdownProps = {
 	itinerary: ItineraryWithTimings;
+	incidents?: Incident[];
 	onStationClick?: (stationId: string) => void;
 };
 const ItineraryBreakdown = ({
 	itinerary,
+	incidents,
 	onStationClick
 }: ItineraryBreakdownProps) => {
 	return (
@@ -207,6 +234,7 @@ const ItineraryBreakdown = ({
 					)}
 					<ItineraryBreakdownPart
 						segment={segment}
+						incidents={incidents}
 						onStationClick={onStationClick}
 					/>
 				</div>

@@ -9,7 +9,7 @@ export function getStopLine(stopId: string): { id: string; name: string } {
 	const line = db
 		.prepare(
 			`SELECT
-     	r.route_id,
+     	r.route_id as id,
       r.name
     FROM Stops s
     JOIN StopTimes st ON s.stop_id = st.stop_id
