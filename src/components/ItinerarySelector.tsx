@@ -89,102 +89,105 @@ const ItinerarySelector = ({
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}
 			</div>
-			<div className='flex items-center justify-center'>
-				<div className='*:my-1 pl-4'>
-					<StopSearchInput
-						placeholder={t('ItinerarySelector.departure')}
-						onSelect={(stopId) =>
-							setEndpoints({ ...endpoints, departure: stopId })
-						}
-						value={displayedEndpoints.departure}
-					/>
-					<StopSearchInput
-						placeholder={t('ItinerarySelector.destination')}
-						onSelect={(stopId) =>
-							setEndpoints({ ...endpoints, destination: stopId })
-						}
-						value={displayedEndpoints.destination}
-					/>
-					<div className='*:mx-1'>
-						<span>{t('ItinerarySelector.displayMode.label')}</span>
-						<select
-							onChange={(e) =>
-								setDisplayMode(e.target.value as 'map' | 'graph' | 'mst')
+			<div className='flex flex-col pl-4'>
+				<div className='flex items-center justify-center'>
+					<div className='*:my-1'>
+						<StopSearchInput
+							placeholder={t('ItinerarySelector.departure')}
+							onSelect={(stopId) =>
+								setEndpoints({ ...endpoints, departure: stopId })
 							}
-							value={displayMode}
-						>
-							<option value='map'>
-								{t('ItinerarySelector.displayMode.map')}
-							</option>
-							<option value='graph'>
-								{t('ItinerarySelector.displayMode.graph')}
-							</option>
-							<option value='mst'>
-								{t('ItinerarySelector.displayMode.mst')}
-							</option>
-						</select>
+							value={displayedEndpoints.departure}
+						/>
+						<StopSearchInput
+							placeholder={t('ItinerarySelector.destination')}
+							onSelect={(stopId) =>
+								setEndpoints({ ...endpoints, destination: stopId })
+							}
+							value={displayedEndpoints.destination}
+						/>
 					</div>
-					<div hidden={displayMode === 'map'} className='*:mx-1'>
-						<span>{t('ItinerarySelector.isConnected.label')}</span>
-						<span>
-							{t(`ItinerarySelector.isConnected.${isConnected ? 'yes' : 'no'}`)}
-						</span>
-					</div>
-					<div className='*:mx-1'>
-						<span>{t('ItinerarySelector.timing.from')}</span>
-						<select
-							value={timingSplit[0]}
-							onChange={onTimingSelect}
-							data-type='hours'
-						>
-							{Array(24)
-								.fill(0)
-								.map((_, i) => (
-									<option value={pad(i)} key={i}>
-										{pad(i)}
-									</option>
-								))}
-						</select>
-						<span>:</span>
-						<select
-							value={timingSplit[1]}
-							onChange={onTimingSelect}
-							data-type='minutes'
-						>
-							{Array(60)
-								.fill(0)
-								.map((_, i) => (
-									<option value={pad(i)} key={i}>
-										{pad(i)}
-									</option>
-								))}
-						</select>
-					</div>
-				</div>
-				<div>
-					{itineraries && (
-						<MdClose
+					<div>
+						{itineraries && (
+							<MdClose
+								size={38}
+								className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+								onClick={clear}
+							/>
+						)}
+						<MdOutlineSwapCalls
 							size={38}
 							className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
-							onClick={clear}
+							onClick={() => {
+								setEndpoints({
+									departure: endpoints.destination,
+									destination: endpoints.departure
+								});
+								setDisplayedEndpoints({
+									departure: displayedEndpoints.destination,
+									destination: displayedEndpoints.departure
+								});
+							}}
 						/>
-					)}
-					<MdOutlineSwapCalls
-						size={38}
-						className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
-						onClick={() => {
-							setEndpoints({
-								departure: endpoints.destination,
-								destination: endpoints.departure
-							});
-							setDisplayedEndpoints({
-								departure: displayedEndpoints.destination,
-								destination: displayedEndpoints.departure
-							});
-						}}
-					/>
+					</div>
+				</div>
+				<div className='*:mx-1'>
+					<span>{t('ItinerarySelector.displayMode.label')}</span>
+					<select
+						onChange={(e) =>
+							setDisplayMode(e.target.value as 'map' | 'graph' | 'mst')
+						}
+						value={displayMode}
+					>
+						<option value='map'>
+							{t('ItinerarySelector.displayMode.map')}
+						</option>
+						<option value='graph'>
+							{t('ItinerarySelector.displayMode.graph')}
+						</option>
+						<option value='mst'>
+							{t('ItinerarySelector.displayMode.mst')}
+						</option>
+					</select>
+				</div>
+				<div hidden={displayMode === 'map'} className='*:mx-1'>
+					<span>{t('ItinerarySelector.isConnected.label')}</span>
+					<span>
+						{t(`ItinerarySelector.isConnected.${isConnected ? 'yes' : 'no'}`)}
+					</span>
+				</div>
+				<div className='*:mx-1'>
+					<span>{t('ItinerarySelector.timing.from')}</span>
+					<select
+						value={timingSplit[0]}
+						onChange={onTimingSelect}
+						data-type='hours'
+					>
+						{Array(24)
+							.fill(0)
+							.map((_, i) => (
+								<option value={pad(i)} key={i}>
+									{pad(i)}
+								</option>
+							))}
+					</select>
+					<span>:</span>
+					<select
+						value={timingSplit[1]}
+						onChange={onTimingSelect}
+						data-type='minutes'
+					>
+						{Array(60)
+							.fill(0)
+							.map((_, i) => (
+								<option value={pad(i)} key={i}>
+									{pad(i)}
+								</option>
+							))}
+					</select>
 				</div>
 			</div>
+
 			<button
 				onClick={onRequest}
 				className='cursor-pointer w-32 px-3 py-1 mt-2 border-2

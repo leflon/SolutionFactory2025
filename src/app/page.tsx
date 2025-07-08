@@ -1,6 +1,5 @@
 'use client';
 
-import InteractiveMap from '@/components/InteractiveMap';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import TrafficInfo from '@/components/TrafficInfo';
@@ -13,6 +12,9 @@ import {
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
+const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
+	ssr: false
+});
 export default function Home() {
 	const [network, setNetwork] = useState<MetroNetwork | undefined>(undefined);
 	const [mst, setMST] = useState<MetroNetwork | undefined>(undefined);

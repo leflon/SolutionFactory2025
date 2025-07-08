@@ -41,13 +41,19 @@ export async function GET(req: NextRequest) {
 			ttl: cacheTTL
 		});
 	}
+	if (!process.env.IDFM_API_KEY) {
+		return NextResponse.json(
+			{ error: 'IDFM API key is not configured on the server.' },
+			{ status: 500 }
+		);
+	}
 	const res = await fetch(
 		'https://prim.iledefrance-mobilites.fr/marketplace/v2/navitia/line_reports/physical_modes%2Fphysical_mode%3AMetro/line_reports',
 		{
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
-				'apiKey': process.env.IDFM_API_KEY
+				apiKey: process.env.IDFM_API_KEY
 			}
 		}
 	);
