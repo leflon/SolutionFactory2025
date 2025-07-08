@@ -5,6 +5,7 @@ import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import TrafficInfo from '@/components/TrafficInfo';
+import Chatbot from '@/components/Chatbot';
 import {
 	Itinerary,
 	Incident,
@@ -31,6 +32,8 @@ export default function Home() {
 
 	const [stationToZoom, setStationToZoom] = useState<string | null>(null);
 
+	const [loadingItinerary, setLoadingItinerary] = useState(false);
+
 	useEffect(() => {
 		fetch('/api/network')
 			.then((res) => res.json())
@@ -41,13 +44,22 @@ export default function Home() {
 		console.log('ok?');
 		// TODO: Implement API call to fetch itinerary based on endpoints
 		if (!endpoints.departure || !endpoints.destination) return;
+		setLoadingItinerary(true);
 		fetch(
 			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}`
 		)
 			.then((res) => res.json())
-			.then(setItineraries);
+			.then(setItineraries)
+			.finally(() => setLoadingItinerary(false));
 		setSelectedItinerary(-1);
 	};
+
+	// Automatically compute itinerary when both endpoints are set
+	useEffect(() => {
+		if (endpoints.departure && endpoints.destination) {
+			handleItineraryRequest();
+		}
+	}, [endpoints.departure, endpoints.destination]);
 
 	const fetchIncidents = async () => {
 		const res = await fetch('/api/traffic');
@@ -98,6 +110,7 @@ export default function Home() {
 					setEndpoints((endpoints) => ({ ...endpoints, destination: id }))
 				}
 			/>
+			<Chatbot setEndpoints={setEndpoints} loadingItinerary={loadingItinerary} />
 		</>
 	);
 }
