@@ -7,6 +7,12 @@
 			"from": "Leave at",
 			"to": "Arrive at"
 		},
+		"displayMode": {
+			"label": "Display",
+			"map": "Map",
+			"graph": "Graph",
+			"mst": "MST"
+		},
 		"go": "Go"
 	},
 	"ItineraryBreakdown": {

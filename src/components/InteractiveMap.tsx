@@ -28,8 +28,9 @@ type Stop = {
 };
 
 type InteractiveMapProps = {
-	customGraph?: MetroNetwork;
+	customGraph: MetroNetwork;
 	itinerary?: Itinerary;
+	displayGraph: boolean;
 	onDepartureSelected?: (stopId: string) => any;
 	onDestinationSelected?: (stopId: string) => any;
 	onArrivalSelected?: (stopId: string) => any;
@@ -42,6 +43,7 @@ export default function InteractiveMap({
 	itinerary,
 	onDepartureSelected,
 	onDestinationSelected,
+	displayGraph,
 	onArrivalSelected,
 	stationToZoom,
 	onZoomEnd
@@ -83,9 +85,11 @@ export default function InteractiveMap({
 
 	useEffect(() => {
 		if (stationToZoom && mapRef.current) {
-			const stop = uniqueStops.find(s => s.name === stationToZoom);
+			const stop = uniqueStops.find((s) => s.name === stationToZoom);
 			if (stop) {
-				mapRef.current.setView([stop.latitude, stop.longitude], 16, { animate: true });
+				mapRef.current.setView([stop.latitude, stop.longitude], 16, {
+					animate: true
+				});
 			}
 		}
 	}, [stationToZoom, uniqueStops]);
@@ -124,7 +128,7 @@ export default function InteractiveMap({
 	};
 
 	const currentRadius = calculateRadius(currentZoom);
-	if (customGraph) {
+	if (displayGraph && !itinerary) {
 		return (
 			<div className='relative h-full z-0'>
 				<MapContainer
@@ -142,7 +146,7 @@ export default function InteractiveMap({
 					{Object.values(customGraph.nodes).map((stop) => (
 						<CircleMarker
 							key={stop.id}
-							center={[stop.longitude, stop.latitude]}
+							center={[stop.latitude, stop.longitude]}
 							radius={5}
 							pathOptions={{
 								color: '#' + stop.line.color,
@@ -165,8 +169,8 @@ export default function InteractiveMap({
 								<Polyline
 									key={from.id + to.id + Math.random()}
 									positions={[
-										[from.longitude, from.latitude],
-										[to.longitude, to.latitude]
+										[from.latitude, from.longitude],
+										[to.latitude, to.longitude]
 									]}
 									pathOptions={{
 										color: edge.isTransfer ? '#000' : '#' + from.line.color

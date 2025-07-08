@@ -19,6 +19,8 @@ type ItinerarySelectorProps = {
 	setSelectedItinerary: (i: number) => void;
 	timing: string;
 	setTiming: (s: string) => void;
+	displayMode: string;
+	setDisplayMode: Dispatch<SetStateAction<'map' | 'graph' | 'mst'>>;
 	onClear: () => void;
 	isLoading?: boolean;
 };
@@ -31,6 +33,8 @@ const ItinerarySelector = ({
 	setTiming,
 	selectedItinerary,
 	setSelectedItinerary,
+	setDisplayMode,
+	displayMode,
 	onClear,
 	isLoading
 }: ItinerarySelectorProps) => {
@@ -99,6 +103,24 @@ const ItinerarySelector = ({
 						}
 						value={displayedEndpoints.destination}
 					/>
+					<div className='*:mx-1'>
+						<span>{t('ItinerarySelector.displayMode.label')}</span>
+						<select
+							onChange={(e) =>
+								setDisplayMode(e.target.value as 'map' | 'graph' | 'mst')
+							}
+						>
+							<option value='map' selected>
+								{t('ItinerarySelector.displayMode.map')}
+							</option>
+							<option value='graph'>
+								{t('ItinerarySelector.displayMode.graph')}
+							</option>
+							<option value='mst'>
+								{t('ItinerarySelector.displayMode.mst')}
+							</option>
+						</select>
+					</div>
 					<div className='*:mx-1'>
 						<span>{t('ItinerarySelector.timing.from')}</span>
 						<select

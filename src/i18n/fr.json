@@ -7,6 +7,12 @@
 		"timing": {
 			"from": "Partir à",
 			"to": "Arriver à"
+		},
+		"displayMode": {
+			"label": "Afficher",
+			"map": "Carte",
+			"graph": "Graph",
+			"mst": "ACPM"
 		}
 	},
 	"ItineraryBreakdown": {

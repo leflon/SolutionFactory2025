@@ -1,21 +1,20 @@
 'use client';
 
 import InteractiveMap from '@/components/InteractiveMap';
-import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import TrafficInfo from '@/components/TrafficInfo';
 import {
-	Itinerary,
 	Incident,
 	ItineraryEndpoints,
-	MetroNetwork,
-	ItineraryWithTimings
+	ItineraryWithTimings,
+	MetroNetwork
 } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
 	const [network, setNetwork] = useState<MetroNetwork | undefined>(undefined);
+	const [mst, setMST] = useState();
 	const [endpoints, setEndpoints] = useState<ItineraryEndpoints>({
 		departure: null,
 		destination: null
@@ -35,12 +34,19 @@ export default function Home() {
 		lastUpdate: Date;
 	} | null>(null);
 
+	const [displayMode, setDisplayMode] = useState<'map' | 'graph' | 'mst'>(
+		'map'
+	);
+
 	const [stationToZoom, setStationToZoom] = useState<string | null>(null);
 
 	useEffect(() => {
 		fetch('/api/network')
 			.then((res) => res.json())
 			.then(setNetwork);
+		fetch('/api/network?mst')
+			.then((res) => res.json())
+			.then(setMST);
 	}, []);
 
 	const handleItineraryRequest = () => {
@@ -73,6 +79,8 @@ export default function Home() {
 				itineraries={itineraries}
 				timing={timing}
 				setTiming={setTiming}
+				displayMode={displayMode}
+				setDisplayMode={setDisplayMode}
 				onClear={() => {
 					setItineraries(undefined);
 					setEndpoints({ departure: null, destination: null });
@@ -92,6 +100,8 @@ export default function Home() {
 				</div>
 			)}
 			<InteractiveMap
+				customGraph={displayMode === 'graph' ? network : mst}
+				displayGraph={displayMode !== 'map'}
 				itinerary={
 					selectedItinerary !== -1 && itineraries
 						? itineraries[selectedItinerary]
