@@ -43,7 +43,7 @@ const ItineraryBreakdownPart = ({
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
 	return (
-		<div className='relative pl-4'>
+		<div className='relative pl-4 dark:text-white'>
 			<div
 				className='line-indicator'
 				style={{ backgroundColor: '#' + segment.line.color }}
@@ -79,8 +79,8 @@ const ItineraryBreakdownPart = ({
 					}}
 				></span>
 				<MetroLineInfo
-					lineName={`${segment.line}`}
-					onStationClick={onStationClick}
+				lineName={`${segment.line.name}`}
+				onStationClick={onStationClick}
 				/>
 			</div>
 			<div
@@ -135,7 +135,7 @@ const ItineraryBreakdown = ({
 }: ItineraryBreakdownProps) => {
 	return (
 		<div className='relative w-full p-4'>
-			<div className='flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg overflow-x-auto'>
+			<div className='flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 dark:text-white p-2 rounded-lg overflow-x-auto'>
 				{itinerary.segments.map((segment, i) => (
 					<Fragment key={segment.line.id}>
 						{segment.connectingDuration !== undefined && (
@@ -162,7 +162,7 @@ const ItineraryBreakdown = ({
 					</Fragment>
 				))}
 			</div>
-			<div className='flex flex-row gap-2 mb-4 justify-center *:flex *:flex-row *:items-center *:text-xs *:gap-1'>
+			<div className='flex flex-row dark:text-white gap-2 mb-4 justify-center *:flex *:flex-row *:items-center *:text-xs *:gap-1'>
 				<div>
 					<MdSchedule size={18} />
 					{t('ItineraryBreakdown.duration', {
@@ -181,7 +181,7 @@ const ItineraryBreakdown = ({
 				</div>
 			</div>
 			<div
-				className='bg-green-400/50 rounded-sm p-1 text-sm flex items-center gap-1 text-green-950 my-2 cursor-help'
+				className='bg-green-400/50 dark:bg-pink-500/50 dark:text-white rounded-sm p-1 text-sm flex items-center gap-1 text-green-950 dark:text-pink-950 my-2 cursor-help'
 				title={t('ItineraryBreakdown.carbonTooltip')}
 			>
 				<RiLeafFill />
@@ -193,7 +193,7 @@ const ItineraryBreakdown = ({
 			{itinerary.segments.map((segment, i) => (
 				<div key={segment.line.id}>
 					{i !== 0 && (
-						<div className='h-12 border-l-6 border-dotted border-blue-500 my-1 pl-2 flex flex-row items-center gap-1'>
+						<div className='h-12 border-l-6 dark:text-white border-dotted border-blue-500 my-1 pl-2 flex flex-row items-center gap-1'>
 							<MdDirectionsWalk size={18} />
 							<span>
 								{segment.connectingDuration &&

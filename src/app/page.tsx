@@ -3,6 +3,7 @@
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import TrafficInfo from '@/components/TrafficInfo';
+import Chatbot from '@/components/Chatbot';
 import {
 	Incident,
 	ItineraryEndpoints,
@@ -45,6 +46,8 @@ export default function Home() {
 
 	const [stationToZoom, setStationToZoom] = useState<string | null>(null);
 
+	const [loadingItinerary, setLoadingItinerary] = useState(false);
+
 	useEffect(() => {
 		fetch('/api/network')
 			.then((res) => res.json())
@@ -67,6 +70,13 @@ export default function Home() {
 			});
 		setSelectedItinerary(-1);
 	};
+
+	// Automatically compute itinerary when both endpoints are set
+	useEffect(() => {
+		if (endpoints.departure && endpoints.destination) {
+			handleItineraryRequest();
+		}
+	}, [endpoints.departure, endpoints.destination]);
 
 	const fetchIncidents = async () => {
 		const res = await fetch('/api/traffic');
@@ -126,7 +136,9 @@ export default function Home() {
 				onDestinationSelected={(id) =>
 					setEndpoints((endpoints) => ({ ...endpoints, destination: id }))
 				}
+				stationToZoom={stationToZoom}
 			/>
+			<Chatbot setEndpoints={setEndpoints} loadingItinerary={loadingItinerary} />
 		</>
 	);
 }

@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { FiInfo } from "react-icons/fi";
 import { FaDoorOpen, FaPeopleGroup, FaTrainSubway } from "react-icons/fa6";
 import { LuTrainTrack } from "react-icons/lu";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaClock } from "react-icons/fa";
 import Image from "next/image";
 import LinePlan from "./LinePlan";
 import type { MetroLineInfo } from "@/lib/metroinfo";
+import { t } from '@/lib/i18n';
 
 type Station = {
     name: string;
@@ -94,11 +95,12 @@ export default function MetroLineInfo({
                     </div>
 
                     <div className="flex items-center gap-4 mb-4 justify-around">
-                        <div className="flex items-center flex-col"><FaDoorOpen /> {informations?.date_ouverture}</div>
-                        <div className="flex items-center flex-col"><FaPeopleGroup /> {informations?.nombre_voyageurs}</div>
-                        <div className="flex items-center flex-col"><FaTrainSubway /> {informations?.materiel_roulant}</div>
-                        <div className="flex items-center flex-col"><LuTrainTrack /> {informations?.longueur_km + " km"}</div>
-                        <div className="flex items-center flex-col"><FaMapMarkerAlt /> {informations?.nombre_stations}</div>
+                        <div className="flex items-center flex-col cursor-help" title={t('LineInformation.openingYear')}><FaDoorOpen /> {informations?.date_ouverture}</div>
+                        <div className="flex items-center flex-col cursor-help" title={t('LineInformation.population')}><FaPeopleGroup /> {informations?.nombre_voyageurs}</div>
+                        <div className="flex items-center flex-col cursor-help" title={t('LineInformation.vehicle')}><FaTrainSubway /> {informations?.materiel_roulant}</div>
+                        <div className="flex items-center flex-col cursor-help" title={t('LineInformation.length')}><LuTrainTrack /> {informations?.longueur_km + " km"}</div>
+                        <div className="flex items-center flex-col cursor-help" title={t('LineInformation.nbStops')}><FaMapMarkerAlt /> {informations?.nombre_stations}</div>
+                        <div className="flex items-center flex-col cursor-help" title={t('LineInformation.timeToCross')}><FaClock /> {informations?.temps_trajet_minutes + " min"}</div>
                     </div>
                     <LinePlan lineId={lineName} onStationClick={onStationClick} />
                 </motion.div>

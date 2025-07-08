@@ -45,5 +45,13 @@
 			"duration": "Le plus rapide",
 			"transfers": "Moins de correspondances"
 		}
+	},
+	"LineInformation": {
+		"nbStops": "Nombre d'arrêts au total sur la ligne",
+		"openingYear": "Année de mise en service de la ligne",
+		"population": "Nombre de personnes qui utilisent cette ligne chaque jour",
+		"vehicle": "Type de matériel roulant utilisé sur cette ligne",
+		"length": "Longueur de la ligne (en km)",
+		"timeToCross": "Temps moyen pour traverser la ligne d'un terminus à l'autre (en minutes)"
 	}
 }

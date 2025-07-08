@@ -22,8 +22,8 @@ const ItineraryPreview = ({
 	return (
 		<button
 			className={
-				'relative text-left cursor-pointer rounded bg-gray-200 overflow-hidden transition-transform active:scale-95' +
-				(isBestCarbon ? ' border-3 border-green-400' : '') +
+				'relative text-left dark:text-white cursor-pointer rounded bg-gray-200 dark:bg-gray-700 overflow-hidden transition-transform active:scale-95' +
+				(isBestCarbon ? ' border-3 border-green-400 dark:border-pink-500' : '') +
 				(isSelected
 					? ' border-3 !border-blue-500'
 					: ' border-3 border-gray-200')
@@ -33,7 +33,7 @@ const ItineraryPreview = ({
 			<div>
 				{isBestCarbon && (
 					<div className='relative h-5 inline-flex -translate-0.5 items-center px-2 text-xs rounded-br-sm'>
-						<div className='absolute w-full h-full top-0 left-0 bg-green-400 z-0 rounded-br-sm -skew-x-10'></div>
+						<div className='absolute w-full h-full top-0 left-0 bg-green-400 dark:bg-pink-500 z-0 rounded-br-sm -skew-x-10'></div>
 						<RiLeafFill className='z-10' />
 						<span className='z-10'>{t('ItineraryPreview.bestCarbon')}</span>
 					</div>
