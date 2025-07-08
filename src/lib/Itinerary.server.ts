@@ -42,39 +42,48 @@ export function getMetroNetwork(): MetroNetwork {
 	};
 	const getTimings = db.prepare(
 		`
-		SELECT st.stop_id AS current_stop_id,
-       s.name AS current_stop_name,
-       s.latitude AS current_latitude,
-       s.longitude AS current_longitude,
-       s.parent_station AS current_parent_station,
-       st.departure_time AS current_departure_time,
-       r.route_id AS current_line_id,
-       r.name AS current_line_name,
-       r.background_color AS current_line_color,
+		SELECT 
+  st.stop_id AS current_stop_id,
+  s.name AS current_stop_name,
+  s.latitude AS current_latitude,
+  s.longitude AS current_longitude,
+  s.parent_station AS current_parent_station,
+  st.departure_time AS current_departure_time,
+  
+  r.route_id AS current_line_id,
+  r.name AS current_line_name,
+  r.background_color AS current_line_color,
 
-       COALESCE(stm1.stop_id, stp1.stop_id) AS next_stop_id,
-       COALESCE(stm1.departure_time, stp1.departure_time) AS next_departure_time,
-       s2.longitude AS next_longitude,
-       s2.latitude AS next_latitude
-  FROM StopTimes st
-       JOIN
-       	Stops s ON st.stop_id = s.stop_id
-       JOIN
-       	Routes r ON r.route_id = s.route_id
-       LEFT JOIN
-       	StopTimes stm1 ON st.trip_id = stm1.trip_id AND st.stop_sequence = stm1.stop_sequence - 1
-       LEFT JOIN
-       	StopTimes stp1 ON st.trip_id = stp1.trip_id AND st.stop_sequence = stp1.stop_sequence + 1
-                           AND stm1.trip_id IS NULL
-       JOIN
-       	Stops s2 ON next_stop_id = s2.stop_id
+  COALESCE(stm1.stop_id, stp1.stop_id) AS next_stop_id,
+  COALESCE(stm1.departure_time, stp1.departure_time) AS next_departure_time,
+  s2.longitude AS next_longitude,
+  s2.latitude AS next_latitude
 
- WHERE current_departure_time IS NOT NULL AND
-       next_departure_time IS NOT NULL
- GROUP BY current_stop_id,
-          next_stop_id
- ORDER BY st.trip_id,
-          st.stop_sequence;
+FROM StopTimes st
+JOIN Stops s ON st.stop_id = s.stop_id
+
+-- 🛠️ Corrigé ici : passage via Trips
+JOIN Trips t ON st.trip_id = t.trip_id
+JOIN Routes r ON t.route_id = r.route_id
+
+-- Stop suivant (si disponible)
+LEFT JOIN StopTimes stm1 
+  ON st.trip_id = stm1.trip_id AND st.stop_sequence = stm1.stop_sequence - 1
+
+-- Alternative si pas de stop suivant
+LEFT JOIN StopTimes stp1 
+  ON st.trip_id = stp1.trip_id AND st.stop_sequence = stp1.stop_sequence + 1
+     AND stm1.trip_id IS NULL
+
+-- Détails du prochain arrêt
+LEFT JOIN Stops s2 ON s2.stop_id = COALESCE(stm1.stop_id, stp1.stop_id)
+
+WHERE 
+  st.departure_time IS NOT NULL AND
+  COALESCE(stm1.departure_time, stp1.departure_time) IS NOT NULL
+
+GROUP BY current_stop_id, next_stop_id
+ORDER BY st.trip_id, st.stop_sequence;
 
 	`
 	);
@@ -100,7 +109,7 @@ export function getMetroNetwork(): MetroNetwork {
 		}
 		const duration = Math.abs(
 			timeStringToSeconds(timing.next_departure_time) -
-				timeStringToSeconds(timing.current_departure_time)
+			timeStringToSeconds(timing.current_departure_time)
 		);
 		edges[timing.current_stop_id].push({
 			fromId: timing.current_stop_id,
@@ -127,10 +136,10 @@ export function getMetroNetwork(): MetroNetwork {
 		`
 		)
 		.all() as {
-		from_id: string;
-		to_id: string;
-		time: number;
-	}[];
+			from_id: string;
+			to_id: string;
+			time: number;
+		}[];
 
 	for (const transfer of transfers) {
 		if (!edges[transfer.from_id]) {

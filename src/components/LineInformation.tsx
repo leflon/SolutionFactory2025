@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { FiInfo } from "react-icons/fi";
 import { FaDoorOpen, FaPeopleGroup, FaTrainSubway } from "react-icons/fa6";
 import { LuTrainTrack } from "react-icons/lu";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaClock } from "react-icons/fa";
 import Image from "next/image";
 import LinePlan from "./LinePlan";
 import type { MetroLineInfo } from "@/lib/metroinfo";
@@ -99,6 +99,7 @@ export default function MetroLineInfo({
                         <div className="flex items-center flex-col"><FaTrainSubway /> {informations?.materiel_roulant}</div>
                         <div className="flex items-center flex-col"><LuTrainTrack /> {informations?.longueur_km + " km"}</div>
                         <div className="flex items-center flex-col"><FaMapMarkerAlt /> {informations?.nombre_stations}</div>
+                        <div className="flex items-center flex-col"><FaClock /> {informations?.temps_trajet_minutes + " min"}</div>
                     </div>
                     <LinePlan lineId={lineName} onStationClick={onStationClick} />
                 </motion.div>

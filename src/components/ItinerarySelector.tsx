@@ -55,7 +55,7 @@ const ItinerarySelector = ({
 	return (
 		<div
 			className='z-50 fixed top-20 bg-white flex flex-col items-center gap-2
-		border border-gray-300 dark:border-gray-600 rounded-lg w-80 max-h-9/12 overflow-y-auto overflow-x-hidden py-4 left-5 shadow-md dark:shadow-lg'
+		border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg w-80 max-h-9/12 overflow-y-auto overflow-x-hidden py-4 left-5 shadow-md dark:shadow-lg'
 		>
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}
@@ -81,13 +81,13 @@ const ItinerarySelector = ({
 					{itineraries && (
 						<MdClose
 							size={38}
-							className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+							className='shrink-0 mx-2 cursor-pointer dark:text-white will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
 							onClick={clear}
 						/>
 					)}
 					<MdOutlineSwapCalls
 						size={38}
-						className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+						className='shrink-0 mx-2 cursor-pointer dark:text-white will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
 						onClick={() => {
 							setEndpoints({
 								departure: endpoints.destination,

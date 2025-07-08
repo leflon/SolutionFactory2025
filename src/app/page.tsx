@@ -97,6 +97,7 @@ export default function Home() {
 				onDestinationSelected={(id) =>
 					setEndpoints((endpoints) => ({ ...endpoints, destination: id }))
 				}
+				stationToZoom={stationToZoom}
 			/>
 		</>
 	);
