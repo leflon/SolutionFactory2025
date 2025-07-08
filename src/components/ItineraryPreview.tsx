@@ -4,6 +4,7 @@ import { MdKeyboardArrowRight } from 'react-icons/md';
 import { RiLeafFill } from 'react-icons/ri';
 import Image from 'next/image';
 import { t } from '@/lib/i18n';
+import React from 'react';
 
 type ItineraryPreviewProps = {
 	itinerary: Itinerary;
@@ -44,7 +45,7 @@ const ItineraryPreview = ({
 			<div className='flex items-center justify-between p-2'>
 				<div className='flex gap-px items-center'>
 					{itinerary.segments.map((segment, i) => (
-						<>
+						<React.Fragment key={i}>
 							<Image
 								src={`/metros/${segment.line.name}.png`}
 								alt={segment.line.name}
@@ -54,7 +55,7 @@ const ItineraryPreview = ({
 							{i !== itinerary.segments.length - 1 && (
 								<MdKeyboardArrowRight size={24} />
 							)}
-						</>
+						</React.Fragment>
 					))}
 				</div>
 				<div className='text-lg font-bold ml-4'>

@@ -28,7 +28,7 @@ type Stop = {
 };
 
 type InteractiveMapProps = {
-	customGraph: MetroNetwork;
+	customGraph?: MetroNetwork;
 	itinerary?: Itinerary;
 	displayGraph: boolean;
 	onDepartureSelected?: (stopId: string) => any;
@@ -217,6 +217,7 @@ export default function InteractiveMap({
 				if (!currentStop) return;
 				itineraryMarkers.push(
 					<CircleMarker
+						key={currentStop.stop_id}
 						center={[currentStop.latitude, currentStop.longitude]}
 						radius={isBig ? currentRadius : 3}
 						pathOptions={{

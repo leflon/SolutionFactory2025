@@ -10,6 +10,7 @@ import {
 	ItineraryWithTimings,
 	MetroNetwork
 } from '@/lib/types';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
@@ -19,6 +20,8 @@ export default function Home() {
 		departure: null,
 		destination: null
 	});
+	const [isLoadingItineraries, setIsLoadingItineraries] = useState(false);
+
 	const now = new Date();
 	now.setSeconds(0);
 	const [timing, setTiming] = useState(
@@ -51,11 +54,15 @@ export default function Home() {
 
 	const handleItineraryRequest = () => {
 		if (!endpoints.departure || !endpoints.destination) return;
+		setIsLoadingItineraries(true);
 		fetch(
 			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}&departureTime=${timing}`
 		)
 			.then((res) => res.json())
-			.then(setItineraries);
+			.then((res) => {
+				setItineraries(res);
+				setIsLoadingItineraries(false);
+			});
 		setSelectedItinerary(-1);
 	};
 
@@ -81,6 +88,7 @@ export default function Home() {
 				setTiming={setTiming}
 				displayMode={displayMode}
 				setDisplayMode={setDisplayMode}
+				isLoading={isLoadingItineraries}
 				isConnected={
 					displayMode === 'graph' ? network?.isConnected : mst?.isConnected
 				}

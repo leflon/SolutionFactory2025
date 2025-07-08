@@ -111,8 +111,9 @@ const ItinerarySelector = ({
 							onChange={(e) =>
 								setDisplayMode(e.target.value as 'map' | 'graph' | 'mst')
 							}
+							value={displayMode}
 						>
-							<option value='map' selected>
+							<option value='map'>
 								{t('ItinerarySelector.displayMode.map')}
 							</option>
 							<option value='graph'>
@@ -139,7 +140,9 @@ const ItinerarySelector = ({
 							{Array(24)
 								.fill(0)
 								.map((_, i) => (
-									<option value={pad(i)}>{pad(i)}</option>
+									<option value={pad(i)} key={i}>
+										{pad(i)}
+									</option>
 								))}
 						</select>
 						<span>:</span>
@@ -151,7 +154,9 @@ const ItinerarySelector = ({
 							{Array(60)
 								.fill(0)
 								.map((_, i) => (
-									<option value={pad(i)}>{pad(i)}</option>
+									<option value={pad(i)} key={i}>
+										{pad(i)}
+									</option>
 								))}
 						</select>
 					</div>
@@ -183,12 +188,16 @@ const ItinerarySelector = ({
 			<button
 				onClick={onRequest}
 				className='cursor-pointer w-32 px-3 py-1 mt-2 border-2
-				border-green-600 text-green-500 dark:border-pink-400 dark:text-pink-400
+				border-green-600  dark:border-pink-400
 				font-medium rounded-md transition-all duration-300 ease-in-out
-				hover:scale-105 hover:bg-green-600 hover:text-white hover:dark:bg-pink-400
-				hover:dark:text-white'
+				hover:scale-105 bg-green-600 text-white dark:bg-pink-400
+				hover:dark:text-white flex items-center justify-center'
 			>
-				{t('ItinerarySelector.go')}
+				{!isLoading ? (
+					<span>{t('ItinerarySelector.go')}</span>
+				) : (
+					<div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+				)}
 			</button>
 			<div className='flex flex-col gap-2 w-full px-4'>
 				{itineraries &&
