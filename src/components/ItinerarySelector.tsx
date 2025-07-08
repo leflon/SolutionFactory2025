@@ -1,4 +1,8 @@
-import { Itinerary, ItineraryEndpoints } from '@/lib/types';
+import {
+	Itinerary,
+	ItineraryEndpoints,
+	ItineraryWithTimings
+} from '@/lib/types';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { MdClose, MdOutlineSwapCalls } from 'react-icons/md';
 import StopSearchInput from './StopSearchInput';
@@ -10,9 +14,11 @@ type ItinerarySelectorProps = {
 	onRequest: () => any;
 	endpoints: ItineraryEndpoints;
 	setEndpoints: Dispatch<SetStateAction<ItineraryEndpoints>>;
-	itineraries?: Itinerary[];
+	itineraries?: ItineraryWithTimings[];
 	selectedItinerary: number;
 	setSelectedItinerary: (i: number) => void;
+	timing: string;
+	setTiming: (s: string) => void;
 	onClear: () => void;
 	isLoading?: boolean;
 };
@@ -21,6 +27,8 @@ const ItinerarySelector = ({
 	endpoints,
 	setEndpoints,
 	itineraries,
+	timing,
+	setTiming,
 	selectedItinerary,
 	setSelectedItinerary,
 	onClear,
@@ -28,6 +36,19 @@ const ItinerarySelector = ({
 }: ItinerarySelectorProps) => {
 	const [displayedEndpoints, setDisplayedEndpoints] =
 		useState<ItineraryEndpoints>({ departure: null, destination: null });
+
+	const timingSplit = timing.split(':');
+
+	const onTimingSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const type = e.target.dataset.type!;
+		let str = '';
+		if (type === 'hours') {
+			str = `${e.target.value}:${timingSplit[1]}:00`;
+		} else {
+			str = `${timingSplit[0]}:${e.target.value}:00`;
+		}
+		setTiming(str);
+	};
 
 	const fetchName = async (
 		endpoint: 'departure' | 'destination',
@@ -51,6 +72,8 @@ const ItinerarySelector = ({
 		setDisplayedEndpoints({ departure: '', destination: '' });
 		onClear();
 	};
+
+	const pad = (i: number) => `${i < 9 ? '0' : ''}${i}`;
 
 	return (
 		<div
@@ -76,6 +99,32 @@ const ItinerarySelector = ({
 						}
 						value={displayedEndpoints.destination}
 					/>
+					<div className='*:mx-1'>
+						<span>{t('ItinerarySelector.timing.from')}</span>
+						<select
+							value={timingSplit[0]}
+							onChange={onTimingSelect}
+							data-type='hours'
+						>
+							{Array(24)
+								.fill(0)
+								.map((_, i) => (
+									<option value={pad(i)}>{pad(i)}</option>
+								))}
+						</select>
+						<span>:</span>
+						<select
+							value={timingSplit[1]}
+							onChange={onTimingSelect}
+							data-type='minutes'
+						>
+							{Array(60)
+								.fill(0)
+								.map((_, i) => (
+									<option value={pad(i)}>{pad(i)}</option>
+								))}
+						</select>
+					</div>
 				</div>
 				<div>
 					{itineraries && (

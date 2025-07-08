@@ -19,6 +19,29 @@ export function timeStringToSeconds(timeString: string): number {
 	return hours * 3600 + minutes * 60 + seconds;
 }
 
+export function dateToTimeString(date: Date): string {
+	date.setSeconds(0); // Seconds are alway set to 0 in IDFM metro timings.
+	date.setMinutes(date.getMinutes() + 1); // Avoids inconsistencies and adds a layer of safety to avoid users from being late.
+	const str = date.toLocaleTimeString('en-US', { hour12: false });
+	const hours = date.getHours();
+	if (hours > 0 && hours < 3) {
+		return `${hours + 24}:${str.slice(3)}`;
+	}
+	return str;
+}
+export function timeStringToDate(timeString: string): Date {
+	let [hours, minutes, seconds] = timeString.split(':').map((s) => +s);
+	const date = new Date();
+	if (hours > 24) {
+		date.setDate(date.getDate() + 1);
+		hours -= 24;
+	}
+	date.setHours(hours);
+	date.setMinutes(minutes);
+	date.setSeconds(seconds);
+	return date;
+}
+
 export function distance(from: [number, number], to: [number, number]): number {
 	const [lon1, lat1] = from;
 	const [lon2, lat2] = to;

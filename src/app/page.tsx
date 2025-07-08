@@ -9,7 +9,8 @@ import {
 	Itinerary,
 	Incident,
 	ItineraryEndpoints,
-	MetroNetwork
+	MetroNetwork,
+	ItineraryWithTimings
 } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
@@ -19,9 +20,14 @@ export default function Home() {
 		departure: null,
 		destination: null
 	});
-	const [itineraries, setItineraries] = useState<Itinerary[] | undefined>(
-		undefined
+	const now = new Date();
+	now.setSeconds(0);
+	const [timing, setTiming] = useState(
+		now.toLocaleTimeString('en-US', { hour12: false })
 	);
+	const [itineraries, setItineraries] = useState<
+		ItineraryWithTimings[] | undefined
+	>(undefined);
 	const [selectedItinerary, setSelectedItinerary] = useState(-1);
 
 	const [trafficInfo, setTrafficInfo] = useState<{
@@ -38,11 +44,9 @@ export default function Home() {
 	}, []);
 
 	const handleItineraryRequest = () => {
-		console.log('ok?');
-		// TODO: Implement API call to fetch itinerary based on endpoints
 		if (!endpoints.departure || !endpoints.destination) return;
 		fetch(
-			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}`
+			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}&departureTime=${timing}`
 		)
 			.then((res) => res.json())
 			.then(setItineraries);
@@ -67,6 +71,8 @@ export default function Home() {
 				endpoints={endpoints}
 				setEndpoints={setEndpoints}
 				itineraries={itineraries}
+				timing={timing}
+				setTiming={setTiming}
 				onClear={() => {
 					setItineraries(undefined);
 					setEndpoints({ departure: null, destination: null });

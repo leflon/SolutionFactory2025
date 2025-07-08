@@ -3,13 +3,20 @@
 		"title": "Votre itinéraire",
 		"departure": "Point de départ",
 		"destination": "Destination",
-		"go": "Aller"
+		"go": "Aller",
+		"timing": {
+			"from": "Partir à",
+			"to": "Arriver à"
+		}
 	},
 	"ItineraryBreakdown": {
 		"duration": "{{duration}} min",
 		"direction": "Direction <b>{{direction}}</b>",
 		"carbonTooltip": "Empreinte carbone estimée, sachant que l'empreinte carbone moyenne par passager par kilomètre est de 3.8gCO2e par kilomètre (source : RATP)",
 		"carbon": "Empreinte carbone : ",
+		"timing": {
+			"from": "À "
+		},
 		"stops": {
 			"one": "{{count}} arrêt",
 			"other": "{{count}} arrêts"
