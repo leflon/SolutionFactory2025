@@ -116,7 +116,7 @@ type ItineraryBreakdownProps = {
 const ItineraryBreakdown = ({ itinerary, onStationClick }: ItineraryBreakdownProps) => {
 	return (
 		<div className='relative w-full p-4'>
-			<div className='flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 p-2 rounded-lg overflow-x-auto'>
+			<div className='flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 dark:text-white p-2 rounded-lg overflow-x-auto'>
 				{itinerary.segments.map((segment, i) => (
 					<Fragment key={segment.line.id}>
 						{segment.connectingDuration !== undefined && (

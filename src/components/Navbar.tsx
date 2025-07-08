@@ -18,34 +18,7 @@ export default function Navbar() {
 	}, [darkMode]);
 
 	return (
-		<div className="absolute z-50 w-full top-0 flex justify-between items-center px-6 py-4">
-			<div className="group relative flex items-center">
-				<div
-					className="bg-white/60 dark:bg-gray-800/60 group-hover:bg-whie dark:group-hover:bg-gray-700 transition-all duration-300 rounded-full h-12 w-12 group-hover:w-48 overflow-hidden cursor-pointer px-2 flex items-center"
-					style={{ minWidth: 48, minHeight: 48 }}
-				>
-					{/* Logo (poule) */}
-					<Image
-						src="/logos/Logo.png"
-						width={45}
-						height={45}
-						alt={LanguageLabels[lang]}
-						className="transition-all duration-300 flex-shrink-0"
-					/>
-
-					{/* Texte (nom complet sur 3 lignes) */}
-					<div
-						className="ml-3 text-sm font-bold text-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 leading-4"
-					>
-						<div>Roule</div>
-						<div>Ma Poule</div>
-					</div>
-				</div>
-			</div>
-
-
-
-
+		<div className="absolute z-50 top-0 right-0 flex items-center px-6 py-4">
 			<div className="group relative flex items-center">
 				{/* Conteneur principal */}
 				<div

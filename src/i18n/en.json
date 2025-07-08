@@ -27,5 +27,13 @@
 			"duration": "Quickest",
 			"transfers": "Fewer transfers"
 		}
+	},
+	"LineInformation": {
+		"nbStops": "Total number of stops on the line",
+		"openingYear": "Year the line was opened",
+		"population": "Number of people using this line each day",
+		"vehicle": "Type of rolling stock used on this line",
+		"length": "Length of the line (in km)",
+		"timeToCross": "Average time to travel from one end of the line to the other (in minutes)"
 	}
 }
