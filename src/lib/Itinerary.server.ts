@@ -109,7 +109,7 @@ ORDER BY st.trip_id, st.stop_sequence;
 		}
 		const duration = Math.abs(
 			timeStringToSeconds(timing.next_departure_time) -
-				timeStringToSeconds(timing.current_departure_time)
+			timeStringToSeconds(timing.current_departure_time)
 		);
 		edges[timing.current_stop_id].push({
 			fromId: timing.current_stop_id,
@@ -136,10 +136,10 @@ ORDER BY st.trip_id, st.stop_sequence;
 		`
 		)
 		.all() as {
-		from_id: string;
-		to_id: string;
-		time: number;
-	}[];
+			from_id: string;
+			to_id: string;
+			time: number;
+		}[];
 
 	for (const transfer of transfers) {
 		if (!edges[transfer.from_id]) {

@@ -5,6 +5,7 @@ import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
 import ItineraryPreview from './ItineraryPreview';
 import ItineraryBreakdown from './ItineraryBreakdown';
+import Image from 'next/image';
 
 type ItinerarySelectorProps = {
 	onRequest: () => any;
@@ -55,8 +56,20 @@ const ItinerarySelector = ({
 	return (
 		<div
 			className='z-50 fixed top-20 bg-white flex flex-col items-center gap-2
-		border border-gray-300 dark:border-gray-600 rounded-lg w-80 max-h-9/12 overflow-y-auto overflow-x-hidden py-4 left-5 shadow-md dark:shadow-lg'
+		border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg w-80 max-h-9/12 overflow-y-auto overflow-x-hidden py-4 left-5 shadow-md dark:shadow-lg'
 		>
+			<div className='flex items-center gap-2 mb-2'>
+				<Image
+					src={`/logos/Logo.png`}
+					width={60}
+					height={60}
+					alt={"Logo du site"}
+				/>
+				<div>
+					<p className='font-bold dark:text-white'>Roule</p>
+					<p className='font-bold dark:text-white'>Ma Poule</p>
+				</div>
+			</div>
 			<div className='text-xl font-bold dark:text-white'>
 				{t('ItinerarySelector.title')}
 			</div>
@@ -81,13 +94,13 @@ const ItinerarySelector = ({
 					{itineraries && (
 						<MdClose
 							size={38}
-							className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+							className='shrink-0 mx-2 cursor-pointer dark:text-white will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
 							onClick={clear}
 						/>
 					)}
 					<MdOutlineSwapCalls
 						size={38}
-						className='shrink-0 mx-2 cursor-pointer will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
+						className='shrink-0 mx-2 cursor-pointer dark:text-white will-change-transform transition-all hover:bg-gray-400/20 active:scale-90 p-2 rounded-full'
 						onClick={() => {
 							setEndpoints({
 								departure: endpoints.destination,
