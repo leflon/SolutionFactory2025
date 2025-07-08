@@ -429,10 +429,7 @@ export function getItineraryDijkstra(
 		const isFirstStop = i === 0;
 
 		// If this is the first stop or we're changing lines, start a new segment
-		if (
-			isFirstStop ||
-			(currentSegment && currentSegment.line.id !== node.line.id)
-		) {
+		if (isFirstStop || (currentSegment && pathNode.edge?.isTransfer)) {
 			// Finish previous segment if exists
 			if (currentSegment && !isFirstStop) {
 				segments.push(currentSegment);
