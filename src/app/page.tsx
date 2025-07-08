@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 
 export default function Home() {
 	const [network, setNetwork] = useState<MetroNetwork | undefined>(undefined);
-	const [mst, setMST] = useState();
+	const [mst, setMST] = useState<MetroNetwork | undefined>(undefined);
 	const [endpoints, setEndpoints] = useState<ItineraryEndpoints>({
 		departure: null,
 		destination: null
@@ -81,6 +81,9 @@ export default function Home() {
 				setTiming={setTiming}
 				displayMode={displayMode}
 				setDisplayMode={setDisplayMode}
+				isConnected={
+					displayMode === 'graph' ? network?.isConnected : mst?.isConnected
+				}
 				onClear={() => {
 					setItineraries(undefined);
 					setEndpoints({ departure: null, destination: null });

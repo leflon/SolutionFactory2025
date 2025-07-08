@@ -21,6 +21,7 @@ type ItinerarySelectorProps = {
 	setTiming: (s: string) => void;
 	displayMode: string;
 	setDisplayMode: Dispatch<SetStateAction<'map' | 'graph' | 'mst'>>;
+	isConnected?: boolean;
 	onClear: () => void;
 	isLoading?: boolean;
 };
@@ -36,6 +37,7 @@ const ItinerarySelector = ({
 	setDisplayMode,
 	displayMode,
 	onClear,
+	isConnected,
 	isLoading
 }: ItinerarySelectorProps) => {
 	const [displayedEndpoints, setDisplayedEndpoints] =
@@ -120,6 +122,12 @@ const ItinerarySelector = ({
 								{t('ItinerarySelector.displayMode.mst')}
 							</option>
 						</select>
+					</div>
+					<div hidden={displayMode === 'map'} className='*:mx-1'>
+						<span>{t('ItinerarySelector.isConnected.label')}</span>
+						<span>
+							{t(`ItinerarySelector.isConnected.${isConnected ? 'yes' : 'no'}`)}
+						</span>
 					</div>
 					<div className='*:mx-1'>
 						<span>{t('ItinerarySelector.timing.from')}</span>

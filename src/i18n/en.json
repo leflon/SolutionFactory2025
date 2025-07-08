@@ -13,6 +13,11 @@
 			"graph": "Graph",
 			"mst": "MST"
 		},
+		"isConnected": {
+			"label": "Connected: ",
+			"yes": "✅ Yes",
+			"no": "❌ No"
+		},
 		"go": "Go"
 	},
 	"ItineraryBreakdown": {

@@ -100,6 +100,7 @@ export interface MetroNetwork {
 		[stopId: string]: MetroNetworkNode;
 	};
 	edges: MetroNetworkAdjacencyList;
+	isConnected?: boolean;
 }
 /**
  * When an incident is located on a specific portion of a line,

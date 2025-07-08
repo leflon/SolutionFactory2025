@@ -33,7 +33,6 @@ type InteractiveMapProps = {
 	displayGraph: boolean;
 	onDepartureSelected?: (stopId: string) => any;
 	onDestinationSelected?: (stopId: string) => any;
-	onArrivalSelected?: (stopId: string) => any;
 	stationToZoom?: string | null;
 	onZoomEnd?: () => void;
 };
@@ -44,7 +43,6 @@ export default function InteractiveMap({
 	onDepartureSelected,
 	onDestinationSelected,
 	displayGraph,
-	onArrivalSelected,
 	stationToZoom,
 	onZoomEnd
 }: InteractiveMapProps) {
@@ -128,7 +126,7 @@ export default function InteractiveMap({
 	};
 
 	const currentRadius = calculateRadius(currentZoom);
-	if (displayGraph && !itinerary) {
+	if (displayGraph && customGraph && !itinerary) {
 		return (
 			<div className='relative h-full z-0'>
 				<MapContainer

@@ -13,6 +13,11 @@
 			"map": "Carte",
 			"graph": "Graph",
 			"mst": "ACPM"
+		},
+		"isConnected": {
+			"label": "Connecté : ",
+			"yes": "✅ Oui",
+			"no": "❌ Non"
 		}
 	},
 	"ItineraryBreakdown": {

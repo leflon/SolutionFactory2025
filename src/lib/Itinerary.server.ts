@@ -14,6 +14,7 @@ import {
 	distance,
 	getTotalDistance,
 	getTotalDuration,
+	isConnected,
 	timeStringToDate,
 	timeStringToSeconds
 } from './utils';
@@ -157,6 +158,7 @@ export function getMetroNetwork(): MetroNetwork {
 		nodes,
 		edges
 	};
+	metroNetwork.isConnected = isConnected(metroNetwork);
 	return metroNetwork;
 }
 
@@ -278,6 +280,7 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
 		// Depending on requirements, you might return null or the partial MST.
 		// Here, we return the partial MST found.
 	}
+	mst.isConnected = isConnected(mst);
 	cachedMst = mst;
 	return mst;
 }
