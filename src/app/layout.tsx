@@ -17,7 +17,6 @@ export default function RootLayout({
 		<html lang='fr' className='bg-gray-150 dark:bg-gray-800'>
 			<body className='w-screen h-screen'>
 				<LanguageProvider>{children}</LanguageProvider>
-				<Chatbot />
 			</body>
 		</html>
 	);
