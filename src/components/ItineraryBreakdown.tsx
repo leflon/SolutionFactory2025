@@ -2,6 +2,7 @@
 import MetroLineInfo from '@/components/LineInformation';
 import { t } from '@/lib/i18n';
 import {
+	Incident,
 	Itinerary,
 	ItinerarySegment,
 	ItinerarySegmentWithTimings,
@@ -24,9 +25,11 @@ import {
 	MdSchedule
 } from 'react-icons/md';
 import { RiLeafFill } from 'react-icons/ri';
+
 type ItineraryBreakdownPartProps = {
 	segment: ItinerarySegmentWithTimings;
 	onStationClick?: (stationName: string) => void;
+	incidents?: Incident[];
 };
 
 // Allows us to inject CSS variables directly from the component template, to style the small stop indicators border color.
@@ -38,10 +41,17 @@ declare module 'react' {
 }
 const ItineraryBreakdownPart = ({
 	segment,
+	incidents,
 	onStationClick
 }: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
+	const relevantIncidents =
+		incidents &&
+		incidents.filter(
+			(incident) =>
+				incident.line.id === segment.line.id && incident.status === 'active'
+		);
 	return (
 		<div className='relative pl-4 dark:text-white'>
 			<div
@@ -79,9 +89,24 @@ const ItineraryBreakdownPart = ({
 					}}
 				></span>
 				<MetroLineInfo
-				lineName={`${segment.line.name}`}
-				onStationClick={onStationClick}
+					lineName={`${segment.line.name}`}
+					onStationClick={onStationClick}
 				/>
+			</div>
+			<div>
+				{segment.line.id}
+				{relevantIncidents &&
+					relevantIncidents.map((incident, i) => (
+						<div
+							key={i}
+							className='bg-gray-200 px-2 py-1 rounded my-1'
+							style={{
+								backgroundColor: incident.severity.color + '90'
+							}}
+						>
+							{incident.shortMessage}
+						</div>
+					))}
 			</div>
 			<div
 				className='flex flex-row items-center cursor-pointer'
@@ -105,7 +130,10 @@ const ItineraryBreakdownPart = ({
 				{segment.stops.slice(1, -1).map((stop, i) => (
 					<div
 						className='my-2 pl-3 text-xs text-gray-600 dark:text-gray-300 has-stop-indicator small-indicator'
-						style={{ '--border-color': segment.line.color, '--data-index': i }}
+						style={{
+							'--border-color': '#' + segment.line.color,
+							'--data-index': i
+						}}
 						data-displayed={isOpen}
 						key={stop.id}
 					>
@@ -127,10 +155,12 @@ const ItineraryBreakdownPart = ({
 
 type ItineraryBreakdownProps = {
 	itinerary: ItineraryWithTimings;
+	incidents?: Incident[];
 	onStationClick?: (stationId: string) => void;
 };
 const ItineraryBreakdown = ({
 	itinerary,
+	incidents,
 	onStationClick
 }: ItineraryBreakdownProps) => {
 	return (
@@ -181,7 +211,7 @@ const ItineraryBreakdown = ({
 				</div>
 			</div>
 			<div
-				className='bg-green-400/50 dark:bg-pink-500/50 dark:text-white rounded-sm p-1 text-sm flex items-center gap-1 text-green-950 dark:text-pink-950 my-2 cursor-help'
+				className='bg-green-400/50  rounded-sm p-1 text-sm flex items-center gap-1 text-green-950 dark:text-white my-2 cursor-help'
 				title={t('ItineraryBreakdown.carbonTooltip')}
 			>
 				<RiLeafFill />
@@ -204,6 +234,7 @@ const ItineraryBreakdown = ({
 					)}
 					<ItineraryBreakdownPart
 						segment={segment}
+						incidents={incidents}
 						onStationClick={onStationClick}
 					/>
 				</div>
