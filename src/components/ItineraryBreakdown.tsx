@@ -79,8 +79,8 @@ const ItineraryBreakdownPart = ({
 					}}
 				></span>
 				<MetroLineInfo
-				lineName={`${segment.line.name}`}
-				onStationClick={onStationClick}
+					lineName={`${segment.line.name}`}
+					onStationClick={onStationClick}
 				/>
 			</div>
 			<div
@@ -105,7 +105,10 @@ const ItineraryBreakdownPart = ({
 				{segment.stops.slice(1, -1).map((stop, i) => (
 					<div
 						className='my-2 pl-3 text-xs text-gray-600 dark:text-gray-300 has-stop-indicator small-indicator'
-						style={{ '--border-color': segment.line.color, '--data-index': i }}
+						style={{
+							'--border-color': '#' + segment.line.color,
+							'--data-index': i
+						}}
 						data-displayed={isOpen}
 						key={stop.id}
 					>
@@ -181,7 +184,7 @@ const ItineraryBreakdown = ({
 				</div>
 			</div>
 			<div
-				className='bg-green-400/50 dark:bg-pink-500/50 dark:text-white rounded-sm p-1 text-sm flex items-center gap-1 text-green-950 dark:text-pink-950 my-2 cursor-help'
+				className='bg-green-400/50  rounded-sm p-1 text-sm flex items-center gap-1 text-green-950 dark:text-white my-2 cursor-help'
 				title={t('ItineraryBreakdown.carbonTooltip')}
 			>
 				<RiLeafFill />

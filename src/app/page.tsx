@@ -138,7 +138,10 @@ export default function Home() {
 				}
 				stationToZoom={stationToZoom}
 			/>
-			<Chatbot setEndpoints={setEndpoints} loadingItinerary={loadingItinerary} />
+			<Chatbot
+				setEndpoints={setEndpoints}
+				loadingItinerary={loadingItinerary}
+			/>
 		</>
 	);
 }

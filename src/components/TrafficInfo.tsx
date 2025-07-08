@@ -91,7 +91,7 @@ const TrafficInfoPagination = ({
 				<div
 					key={i}
 					className={
-						'relative h-2 bg-gray-200 rounded-full transition-all duration-500 ' +
+						'relative h-2 bg-gray-200 dark:bg-white rounded-full transition-all duration-500 ' +
 						(i === currentIncident
 							? 'w-16'
 							: 'w-2 cursor-pointer hover:scale-150 group-hover:size-3')
@@ -101,7 +101,9 @@ const TrafficInfoPagination = ({
 					<div
 						className={
 							'h-full rounded-full transition-colors duration-500 delay-300 ' +
-							(i === currentIncident ? 'bg-gray-500' : 'w-full bg-gray-300')
+							(i === currentIncident
+								? 'bg-gray-500 dark:bg-gray-400'
+								: 'w-full bg-gray-300')
 						}
 						style={
 							i === currentIncident ? { width: currentIndicatorWidth } : {}
@@ -185,7 +187,7 @@ const TrafficInfo = ({
 	return (
 		<div
 			className={
-				`box-border relative bg-white rounded-2xl border-[1px] border-gray-300 text-left
+				`box-border relative bg-white dark:bg-gray-800 dark:text-white rounded-2xl border-[1px] border-gray-300 dark:border-gray-600 text-left
 			flex items-center gap-3 overflow-hidden group ` +
 				(isShrunk
 					? 'cursor-pointer rounded-full size-18 justify-center self-end hover:scale-110 transition-transform'
@@ -198,7 +200,7 @@ const TrafficInfo = ({
 			tabIndex={isShrunk ? 0 : -1}
 		>
 			<button
-				className='z-50 absolute top-1 right-1 group-hover:opacity-100 opacity-0 cursor-pointer focus:opacity-100 rounded-full'
+				className='z-50 absolute top-1 right-1 !dark:text-white group-hover:opacity-100 opacity-0 cursor-pointer focus:opacity-100 rounded-full'
 				hidden={isShrunk || !shrinkable}
 				onClick={() => setIsShrunk(true)}
 			>

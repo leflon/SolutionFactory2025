@@ -85,14 +85,14 @@ const ItinerarySelector = ({
 	return (
 		<div
 			className='z-50 fixed top-20 bg-white flex flex-col items-center gap-2
-		border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg w-80 max-h-9/12 overflow-y-auto overflow-x-hidden py-4 left-5 shadow-md dark:shadow-lg'
+		border border-gray-300 dark:border-gray-600 dark:bg-gray-800 *:dark:text-white rounded-lg w-80 max-h-9/12 overflow-y-auto overflow-x-hidden py-4 left-5 shadow-md dark:shadow-lg'
 		>
 			<div className='flex items-center gap-2 mb-2'>
 				<Image
 					src={`/logos/Logo.png`}
 					width={60}
 					height={60}
-					alt={"Logo du site"}
+					alt={'Logo du site'}
 				/>
 				<div>
 					<p className='font-bold dark:text-white'>Roule</p>
