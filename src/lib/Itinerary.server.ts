@@ -107,6 +107,12 @@ export function getMetroNetwork(): MetroNetwork {
 		if (!edges[timing.current_stop_id]) {
 			edges[timing.current_stop_id] = [];
 		}
+		// This specific stop point for Porte d'Auteuil allows a direct trip to Michel-Ange - Molitor
+		// Which does not happen in commercial exploitation. To avoid giving wrong data to users,
+		// We do not allow any edges from this stop point
+		if (timing.current_stop_id === 'IDFM:463234') {
+			continue;
+		}
 		const duration = Math.abs(
 			timeStringToSeconds(timing.next_departure_time) -
 				timeStringToSeconds(timing.current_departure_time)
