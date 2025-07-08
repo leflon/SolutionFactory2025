@@ -143,7 +143,7 @@ export default function InteractiveMap({
 					/>
 					{Object.values(customGraph.nodes).map((stop) => (
 						<CircleMarker
-							key={stop.id}
+							key={stop.id + Math.random()}
 							center={[stop.latitude, stop.longitude]}
 							radius={5}
 							pathOptions={{
@@ -217,7 +217,7 @@ export default function InteractiveMap({
 				if (!currentStop) return;
 				itineraryMarkers.push(
 					<CircleMarker
-						key={currentStop.stop_id}
+						key={currentStop.stop_id + Math.random()}
 						center={[currentStop.latitude, currentStop.longitude]}
 						radius={isBig ? currentRadius : 3}
 						pathOptions={{
