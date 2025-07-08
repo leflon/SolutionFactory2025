@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useLanguage } from './LanguageProvider';
-import { IoOptions } from "react-icons/io5";
+import { IoOptions } from 'react-icons/io5';
 import { Language, LanguageLabels } from '@/lib/i18n';
 
 export default function Navbar() {
@@ -18,25 +18,27 @@ export default function Navbar() {
 	}, [darkMode]);
 
 	return (
-		<div className="absolute z-50 top-0 right-0 flex items-center px-6 py-4">
-			<div className="group relative flex items-center">
+		<div className='fixed z-10 top-0 right-0 flex items-center px-6 py-4'>
+			<div className='group relative flex items-center'>
 				{/* Conteneur principal */}
 				<div
-					className="bg-white/60 dark:bg-gray-800/60 group-hover:bg-white dark:group-hover:bg-gray-700 transition-all duration-300 rounded-full h-12 w-12 group-hover:w-64 overflow-hidden px-2 flex items-center"
+					className='bg-white/60 dark:bg-gray-800/60 group-hover:bg-white dark:group-hover:bg-gray-700 transition-all duration-300 rounded-full h-12 w-12 group-hover:w-64 overflow-hidden px-2 flex items-center'
 					style={{ minWidth: 48, minHeight: 48 }}
 				>
 					{/* Icône ⋮ centrée au repos, disparaît au hover */}
-					<div className="absolute left-0 top-0 w-12 h-12 flex items-center justify-center transition-opacity duration-300 group-hover:opacity-0">
-						<span className="text-xl text-gray-800 dark:text-white"><IoOptions /></span>
+					<div className='absolute left-0 top-0 w-12 h-12 flex items-center justify-center transition-opacity duration-300 group-hover:opacity-0'>
+						<span className='text-xl text-gray-800 dark:text-white'>
+							<IoOptions />
+						</span>
 					</div>
 
 					{/* Contenu affiché au survol */}
-					<div className="flex items-center gap-4 justify-center w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+					<div className='flex items-center gap-4 justify-center w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
 						{/* Sélecteur de langue */}
-						<div className="relative">
+						<div className='relative'>
 							<button
 								onClick={() => setShowDropdown((prev) => !prev)}
-								className="flex items-center gap-2 text-gray-800 dark:text-white text-sm cursor-pointer"
+								className='flex items-center gap-2 text-gray-800 dark:text-white text-sm cursor-pointer'
 							>
 								<Image
 									src={`/flags/${lang}.png`}
@@ -46,50 +48,49 @@ export default function Navbar() {
 								/>
 								{LanguageLabels[lang]}
 								<span
-									className={`transition-transform duration-100 ${showDropdown ? 'rotate-180' : ''
-										}`}
+									className={`transition-transform duration-100 ${
+										showDropdown ? 'rotate-180' : ''
+									}`}
 								>
 									▼
 								</span>
 							</button>
 						</div>
 						{showDropdown && (
-								<div className="absolute z-[100] cursor-pointer mt-2 w-32 bg-white dark:bg-gray-800 shadow-lg rounded">
-									{Object.entries(LanguageLabels).map(([code, label]) => (
-										<div
-											key={code}
-											onClick={() => {
-												setLang(code as Language);
-												setShowDropdown(false);
-											}}
-											className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-										>
-											<Image
-												src={`/flags/${code}.png`}
-												width={20}
-												height={12}
-												alt={label}
-											/>
-											<span className="text-sm text-gray-800 dark:text-white">
-												{label}
-											</span>
-										</div>
-									))}
-								</div>
-							)}
+							<div className='absolute z-[100] cursor-pointer mt-2 w-32 bg-white dark:bg-gray-800 shadow-lg rounded'>
+								{Object.entries(LanguageLabels).map(([code, label]) => (
+									<div
+										key={code}
+										onClick={() => {
+											setLang(code as Language);
+											setShowDropdown(false);
+										}}
+										className='flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer'
+									>
+										<Image
+											src={`/flags/${code}.png`}
+											width={20}
+											height={12}
+											alt={label}
+										/>
+										<span className='text-sm text-gray-800 dark:text-white'>
+											{label}
+										</span>
+									</div>
+								))}
+							</div>
+						)}
 
 						{/* Toggle dark mode */}
 						<button
 							onClick={() => setDarkMode(!darkMode)}
-							className="text-xl text-gray-800 dark:text-white transition hover:scale-110 cursor-pointer"
+							className='text-xl text-gray-800 dark:text-white transition hover:scale-110 cursor-pointer'
 						>
 							{darkMode ? '🌙' : '☀️'}
 						</button>
 					</div>
 				</div>
 			</div>
-
-
 		</div>
 	);
 }

@@ -87,61 +87,84 @@ export default function Home() {
 		});
 	};
 	useEffect(() => void fetchIncidents(), []); // Fetch incidents automatically only once, on component mount.
-
+	// Since its reused twice depending on viewport, might as well not repeat this shitload of props twice
+	const selector = (
+		<ItinerarySelector
+			onRequest={handleItineraryRequest}
+			endpoints={endpoints}
+			setEndpoints={setEndpoints}
+			itineraries={itineraries}
+			timing={timing}
+			setTiming={setTiming}
+			displayMode={displayMode}
+			setDisplayMode={setDisplayMode}
+			isLoading={isLoadingItineraries}
+			isConnected={
+				displayMode === 'graph' ? network?.isConnected : mst?.isConnected
+			}
+			onClear={() => {
+				setItineraries(undefined);
+				setEndpoints({ departure: null, destination: null });
+				setSelectedItinerary(-1);
+			}}
+			selectedItinerary={selectedItinerary}
+			setSelectedItinerary={setSelectedItinerary}
+		/>
+	);
 	return (
 		<>
-			<Navbar />
-			<ItinerarySelector
-				onRequest={handleItineraryRequest}
-				endpoints={endpoints}
-				setEndpoints={setEndpoints}
-				itineraries={itineraries}
-				timing={timing}
-				setTiming={setTiming}
-				displayMode={displayMode}
-				setDisplayMode={setDisplayMode}
-				isLoading={isLoadingItineraries}
-				isConnected={
-					displayMode === 'graph' ? network?.isConnected : mst?.isConnected
-				}
-				onClear={() => {
-					setItineraries(undefined);
-					setEndpoints({ departure: null, destination: null });
-					setSelectedItinerary(-1);
-				}}
-				selectedItinerary={selectedItinerary}
-				setSelectedItinerary={setSelectedItinerary}
-			/>
-			{trafficInfo && (
-				<div className='z-50 fixed bottom-5 w-full'>
-					<div className='w-1/2 mx-auto'>
+			<div className='hidden md:contents'>
+				<Navbar />
+				{selector}
+				{trafficInfo && (
+					<div className='z-50 fixed bottom-5 w-full'>
+						<div className='w-1/2 mx-auto'>
+							<TrafficInfo
+								incidents={trafficInfo.incidents}
+								lastUpdate={trafficInfo.lastUpdate}
+							/>
+						</div>
+					</div>
+				)}
+				<Chatbot
+					setEndpoints={setEndpoints}
+					loadingItinerary={loadingItinerary}
+				/>
+			</div>
+			<div className='z-50 fixed w-full bottom-0 md:hidden'>
+				<Navbar />
+				<Chatbot
+					setEndpoints={setEndpoints}
+					loadingItinerary={loadingItinerary}
+				/>
+				{trafficInfo && (
+					<div className='z-50 w-5/6 mx-auto mb-2'>
 						<TrafficInfo
 							incidents={trafficInfo.incidents}
 							lastUpdate={trafficInfo.lastUpdate}
 						/>
 					</div>
-				</div>
-			)}
-			<InteractiveMap
-				customGraph={displayMode === 'graph' ? network : mst}
-				displayGraph={displayMode !== 'map'}
-				itinerary={
-					selectedItinerary !== -1 && itineraries
-						? itineraries[selectedItinerary]
-						: undefined
-				}
-				onDepartureSelected={(id) =>
-					setEndpoints((endpoints) => ({ ...endpoints, departure: id }))
-				}
-				onDestinationSelected={(id) =>
-					setEndpoints((endpoints) => ({ ...endpoints, destination: id }))
-				}
-				stationToZoom={stationToZoom}
-			/>
-			<Chatbot
-				setEndpoints={setEndpoints}
-				loadingItinerary={loadingItinerary}
-			/>
+				)}
+				{selector}
+			</div>
+			{
+				<InteractiveMap
+					customGraph={displayMode === 'graph' ? network : mst}
+					displayGraph={displayMode !== 'map'}
+					itinerary={
+						selectedItinerary !== -1 && itineraries
+							? itineraries[selectedItinerary]
+							: undefined
+					}
+					onDepartureSelected={(id) =>
+						setEndpoints((endpoints) => ({ ...endpoints, departure: id }))
+					}
+					onDestinationSelected={(id) =>
+						setEndpoints((endpoints) => ({ ...endpoints, destination: id }))
+					}
+					stationToZoom={stationToZoom}
+				/>
+			}
 		</>
 	);
 }

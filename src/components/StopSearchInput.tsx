@@ -118,6 +118,7 @@ const StopSearchInput = ({
 							onStopSelect(stop);
 							(e.target as HTMLButtonElement).blur();
 						}}
+						onTouchStart={() => onStopSelect(stop)}
 						onFocus={() => setShowDropdown(true)}
 						onBlur={() => setShowDropdown(false)}
 						className='w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer'
