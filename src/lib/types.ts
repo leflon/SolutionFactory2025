@@ -35,16 +35,24 @@ export interface ItinerarySegment {
 }
 
 export interface Itinerary {
-	/* The departure time requested by the user */
-	requestedDeparturTime?: Date;
-	/* The arrival time request by the user */
-	requestedArrivalTime?: Date;
 	/* The segments making up the itinerary */
 	segments: ItinerarySegment[];
 	/* Carbon footprint of this itinerary in gCO2e */
 	carbonFootprint: number;
 	/* The criterion used to compute the itinerary */
 	criterion: 'transfers' | 'duration';
+}
+
+export interface ItinerarySegmentWithTimings extends ItinerarySegment {
+	/** The departure time of the train to ride on this segment */
+	departureTime: string;
+}
+
+export interface ItineraryWithTimings extends Itinerary {
+	/* The departure time of the first train */
+	departureTime: string;
+
+	segments: ItinerarySegmentWithTimings[];
 }
 
 /**
@@ -92,6 +100,7 @@ export interface MetroNetwork {
 		[stopId: string]: MetroNetworkNode;
 	};
 	edges: MetroNetworkAdjacencyList;
+	isConnected?: boolean;
 }
 /**
  * When an incident is located on a specific portion of a line,

@@ -30,9 +30,9 @@ type Stop = {
 type InteractiveMapProps = {
 	customGraph?: MetroNetwork;
 	itinerary?: Itinerary;
+	displayGraph: boolean;
 	onDepartureSelected?: (stopId: string) => any;
 	onDestinationSelected?: (stopId: string) => any;
-	onArrivalSelected?: (stopId: string) => any;
 	stationToZoom?: string | null;
 	onZoomEnd?: () => void;
 };
@@ -42,7 +42,7 @@ export default function InteractiveMap({
 	itinerary,
 	onDepartureSelected,
 	onDestinationSelected,
-	onArrivalSelected,
+	displayGraph,
 	stationToZoom,
 	onZoomEnd
 }: InteractiveMapProps) {
@@ -83,9 +83,11 @@ export default function InteractiveMap({
 
 	useEffect(() => {
 		if (stationToZoom && mapRef.current) {
-			const stop = uniqueStops.find(s => s.name === stationToZoom);
+			const stop = uniqueStops.find((s) => s.name === stationToZoom);
 			if (stop) {
-				mapRef.current.setView([stop.latitude, stop.longitude], 16, { animate: true });
+				mapRef.current.setView([stop.latitude, stop.longitude], 16, {
+					animate: true
+				});
 			}
 		}
 	}, [stationToZoom, uniqueStops]);
@@ -124,7 +126,7 @@ export default function InteractiveMap({
 	};
 
 	const currentRadius = calculateRadius(currentZoom);
-	if (customGraph) {
+	if (displayGraph && customGraph && !itinerary) {
 		return (
 			<div className='relative h-full z-0'>
 				<MapContainer
@@ -141,8 +143,8 @@ export default function InteractiveMap({
 					/>
 					{Object.values(customGraph.nodes).map((stop) => (
 						<CircleMarker
-							key={stop.id}
-							center={[stop.longitude, stop.latitude]}
+							key={stop.id + Math.random()}
+							center={[stop.latitude, stop.longitude]}
 							radius={5}
 							pathOptions={{
 								color: '#' + stop.line.color,
@@ -165,8 +167,8 @@ export default function InteractiveMap({
 								<Polyline
 									key={from.id + to.id + Math.random()}
 									positions={[
-										[from.longitude, from.latitude],
-										[to.longitude, to.latitude]
+										[from.latitude, from.longitude],
+										[to.latitude, to.longitude]
 									]}
 									pathOptions={{
 										color: edge.isTransfer ? '#000' : '#' + from.line.color
@@ -215,6 +217,7 @@ export default function InteractiveMap({
 				if (!currentStop) return;
 				itineraryMarkers.push(
 					<CircleMarker
+						key={currentStop.stop_id + Math.random()}
 						center={[currentStop.latitude, currentStop.longitude]}
 						radius={isBig ? currentRadius : 3}
 						pathOptions={{

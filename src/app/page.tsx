@@ -1,34 +1,48 @@
 'use client';
 
-import InteractiveMap from '@/components/InteractiveMap';
-import ItineraryBreakdown from '@/components/ItineraryBreakdown';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
 import TrafficInfo from '@/components/TrafficInfo';
 import Chatbot from '@/components/Chatbot';
 import {
-	Itinerary,
 	Incident,
 	ItineraryEndpoints,
+	ItineraryWithTimings,
 	MetroNetwork
 } from '@/lib/types';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
+const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
+	ssr: false
+});
 export default function Home() {
 	const [network, setNetwork] = useState<MetroNetwork | undefined>(undefined);
+	const [mst, setMST] = useState<MetroNetwork | undefined>(undefined);
 	const [endpoints, setEndpoints] = useState<ItineraryEndpoints>({
 		departure: null,
 		destination: null
 	});
-	const [itineraries, setItineraries] = useState<Itinerary[] | undefined>(
-		undefined
+	const [isLoadingItineraries, setIsLoadingItineraries] = useState(false);
+
+	const now = new Date();
+	now.setSeconds(0);
+	const [timing, setTiming] = useState(
+		now.toLocaleTimeString('en-US', { hour12: false })
 	);
+	const [itineraries, setItineraries] = useState<
+		ItineraryWithTimings[] | undefined
+	>(undefined);
 	const [selectedItinerary, setSelectedItinerary] = useState(-1);
 
 	const [trafficInfo, setTrafficInfo] = useState<{
 		incidents: Incident[];
 		lastUpdate: Date;
 	} | null>(null);
+
+	const [displayMode, setDisplayMode] = useState<'map' | 'graph' | 'mst'>(
+		'map'
+	);
 
 	const [stationToZoom, setStationToZoom] = useState<string | null>(null);
 
@@ -38,19 +52,22 @@ export default function Home() {
 		fetch('/api/network')
 			.then((res) => res.json())
 			.then(setNetwork);
+		fetch('/api/network?mst')
+			.then((res) => res.json())
+			.then(setMST);
 	}, []);
 
 	const handleItineraryRequest = () => {
-		console.log('ok?');
-		// TODO: Implement API call to fetch itinerary based on endpoints
 		if (!endpoints.departure || !endpoints.destination) return;
-		setLoadingItinerary(true);
+		setIsLoadingItineraries(true);
 		fetch(
-			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}`
+			`/api/itinerary?from=${endpoints.departure}&to=${endpoints.destination}&departureTime=${timing}`
 		)
 			.then((res) => res.json())
-			.then(setItineraries)
-			.finally(() => setLoadingItinerary(false));
+			.then((res) => {
+				setItineraries(res);
+				setIsLoadingItineraries(false);
+			});
 		setSelectedItinerary(-1);
 	};
 
@@ -79,6 +96,14 @@ export default function Home() {
 				endpoints={endpoints}
 				setEndpoints={setEndpoints}
 				itineraries={itineraries}
+				timing={timing}
+				setTiming={setTiming}
+				displayMode={displayMode}
+				setDisplayMode={setDisplayMode}
+				isLoading={isLoadingItineraries}
+				isConnected={
+					displayMode === 'graph' ? network?.isConnected : mst?.isConnected
+				}
 				onClear={() => {
 					setItineraries(undefined);
 					setEndpoints({ departure: null, destination: null });
@@ -98,6 +123,8 @@ export default function Home() {
 				</div>
 			)}
 			<InteractiveMap
+				customGraph={displayMode === 'graph' ? network : mst}
+				displayGraph={displayMode !== 'map'}
 				itinerary={
 					selectedItinerary !== -1 && itineraries
 						? itineraries[selectedItinerary]

@@ -3,12 +3,21 @@ import db from './db';
 import {
 	Itinerary,
 	ItinerarySegment,
+	ItineraryWithTimings,
 	MetroNetwork,
 	MetroNetworkAdjacencyList,
 	MetroNetworkEdge,
 	MetroNetworkNode
 } from './types';
-import { distance, getTotalDistance, timeStringToSeconds } from './utils';
+import {
+	dateToTimeString,
+	distance,
+	getTotalDistance,
+	getTotalDuration,
+	isConnected,
+	timeStringToDate,
+	timeStringToSeconds
+} from './utils';
 
 //#region Metro graph construction
 
@@ -107,6 +116,12 @@ ORDER BY st.trip_id, st.stop_sequence;
 		if (!edges[timing.current_stop_id]) {
 			edges[timing.current_stop_id] = [];
 		}
+		// This specific stop point for Porte d'Auteuil allows a direct trip to Michel-Ange - Molitor
+		// Which does not happen in commercial exploitation. To avoid giving wrong data to users,
+		// We do not allow any edges from this stop point
+		if (timing.current_stop_id === 'IDFM:463234') {
+			continue;
+		}
 		const duration = Math.abs(
 			timeStringToSeconds(timing.next_departure_time) -
 			timeStringToSeconds(timing.current_departure_time)
@@ -158,6 +173,7 @@ ORDER BY st.trip_id, st.stop_sequence;
 		nodes,
 		edges
 	};
+	metroNetwork.isConnected = isConnected(metroNetwork);
 	return metroNetwork;
 }
 
@@ -279,6 +295,7 @@ export function getMinimumSpanningTree(): MetroNetwork | null {
 		// Depending on requirements, you might return null or the partial MST.
 		// Here, we return the partial MST found.
 	}
+	mst.isConnected = isConnected(mst);
 	cachedMst = mst;
 	return mst;
 }
@@ -414,7 +431,6 @@ export function getItineraryDijkstra(
 	if (path.length === 0) {
 		return null;
 	}
-
 	// Convert the reconstructed path of nodes and edges into user-friendly itinerary segments.
 	let segments: ItinerarySegment[] = [];
 	let currentSegment: ItinerarySegment | null = null;
@@ -428,10 +444,7 @@ export function getItineraryDijkstra(
 		const isFirstStop = i === 0;
 
 		// If this is the first stop or we're changing lines, start a new segment
-		if (
-			isFirstStop ||
-			(currentSegment && currentSegment.line.id !== node.line.id)
-		) {
+		if (isFirstStop || (currentSegment && pathNode.edge?.isTransfer)) {
 			// Finish previous segment if exists
 			if (currentSegment && !isFirstStop) {
 				segments.push(currentSegment);
@@ -459,29 +472,13 @@ export function getItineraryDijkstra(
 			const stopDuration = pathNode.edge ? pathNode.edge.duration : 0;
 			const stopDistance = pathNode.edge ? pathNode.edge.duration * 10 : 0; // Estimate distance from time
 
-			// Avoids duplicates
-			// Since two platforms within the same station are considered distinct stops,
-			// We can sometimes have a path from one platform to the other, which is not relevant to the user.
-			if (
-				node.name ===
-				currentSegment.stops[currentSegment.stops.length - 1]?.name
-			)
-				continue;
-
 			currentSegment.stops.push({
 				id: pathNode.nodeId,
 				name: node.name,
 				duration: stopDuration,
 				distance: stopDistance
 			});
-
-			// Set direction for the segment if we have a next stop
-			if (currentSegment.direction === '' && i < path.length - 1) {
-				const nextNode = network.nodes[path[i + 1].nodeId];
-				if (nextNode) {
-					currentSegment.direction = nextNode.name;
-				}
-			}
+			currentSegment.direction = ''; // To be filled when timings are added
 		}
 	}
 
@@ -489,6 +486,27 @@ export function getItineraryDijkstra(
 	if (currentSegment) {
 		segments.push(currentSegment);
 	}
+
+	// This gets rid of implicit transfers (platform->platform from the same line on the same stop)
+	// For i === 0, we remove the first ones, since the last one is the one actually connected to the itinerary
+	// For i === segment.stops.length - 1, we remove the last ones, since the first one is the one actually connected to the itinerary
+	segments.forEach((segment) => {
+		let i = 0;
+		while (i < segment.stops.length) {
+			if (segment.stops.length < 2) break;
+			if (i === 0 && segment.stops[i + 1].name === segment.stops[i].name) {
+				segment.stops.splice(i, 1);
+			} else if (
+				i === segment.stops.length - 1 &&
+				segment.stops[i - 1].name === segment.stops[i].name
+			) {
+				segment.stops.splice(i, 1);
+			} else {
+				i++;
+			}
+		}
+	});
+
 	segments = segments.filter((segment) => segment.stops.length > 1);
 	segments[0].connectingDuration = undefined;
 
@@ -498,4 +516,95 @@ export function getItineraryDijkstra(
 		carbonFootprint: (getTotalDistance(segments) * 3.8) / 1000,
 		criterion
 	};
+}
+
+export function getItineraryWithDepartureTime(
+	departure: string,
+	fromId: string,
+	toId: string,
+	criterion: 'duration' | 'transfers' = 'duration'
+): ItineraryWithTimings {
+	const itinerary = getItineraryDijkstra(fromId, toId, criterion);
+	const network = getMetroNetwork();
+	const returned = itinerary as ItineraryWithTimings; // Filling in missing properties below
+
+	let currentDepartureTime = departure;
+
+	const getNextTrain = db.prepare(`
+		SELECT st.departure_time,
+			st2.departure_time as arrival_time,
+			st3.stop_id as direction_id, -- ID of the direction to ride
+			MAX(st3.stop_sequence) -- makes sure st3 is the last station of the line, giving us the direction
+		FROM StopTimes st
+		JOIN StopTimes st2 ON st2.trip_id = st.trip_id
+		JOIN StopTimes st3 ON st3.trip_id = st.trip_id
+		WHERE
+			st.stop_id = ? -- The stop we're starting from
+			AND st2.stop_id = ? -- Make sure this train will go to the desired station
+			AND st.departure_time > ? -- Restricts to the trains the user can ride (after request departure time)
+		GROUP BY st.trip_id
+		ORDER BY st.departure_time -- Soonest train first
+		LIMIT 1 -- We only need the next train;
+		`);
+	// If the user is requesting to ride at an impossible time (during the night),
+	// We just get them the first train of the day as a fallback
+	const fallback = db.prepare(`
+		SELECT st.departure_time,
+			st2.departure_time as arrival_time,
+			st3.stop_id as direction_id, -- ID of the direction to ride
+			MAX(st3.stop_sequence) -- makes sure st3 is the last station of the line, giving us the direction
+		FROM StopTimes st
+		JOIN StopTimes st2 ON st2.trip_id = st.trip_id
+		JOIN StopTimes st3 ON st3.trip_id = st.trip_id
+		WHERE
+			st.stop_id = ? -- The stop we're starting from
+			AND st2.stop_id = ? -- Make sure this train will go to the desired station
+		GROUP BY st.trip_id
+		ORDER BY st.departure_time -- Soonest train first
+		LIMIT 1 -- We only need the next train;
+		`);
+
+	type Row = {
+		departure_time: string;
+		arrival_time: string;
+		direction_id: string;
+		// Ignoring MAX(...), it's only there for sorting purposes
+	};
+	returned.segments.forEach((segment, i) => {
+		// Take transfer time and previous segment duration into account before checking next trains
+		if (i > 0) {
+			const time = timeStringToDate(currentDepartureTime);
+			const prev = returned.segments[i - 1];
+			// Using Math.ceil systematically to always be safe with transfer times
+			time.setMinutes(
+				time.getMinutes() +
+					Math.ceil((segment.connectingDuration ?? 0) / 60) +
+					Math.ceil(
+						prev.stops.reduce((acc, stop) => acc + stop.duration, 0) / 60
+					)
+			);
+			currentDepartureTime = dateToTimeString(time);
+		}
+		console.log(currentDepartureTime);
+
+		let row = getNextTrain.get(
+			segment.stops[0].id,
+			segment.stops[segment.stops.length - 1].id,
+			currentDepartureTime
+		) as Row;
+		if (!row) {
+			row = fallback.get(
+				segment.stops[0].id,
+				segment.stops[segment.stops.length - 1].id
+			) as Row;
+		}
+
+		segment.departureTime = row.departure_time;
+		if (i === 0) returned.departureTime = row.departure_time;
+
+		// Set direction
+		segment.direction = network.nodes[row.direction_id]?.name || '';
+	});
+
+	return returned;
 }

@@ -1,4 +1,4 @@
-import { Itinerary, ItinerarySegment } from './types';
+import { Itinerary, ItinerarySegment, MetroNetwork } from './types';
 
 /**
  * Normalize a string by decomposing accented characters, removing diacritics,
@@ -17,6 +17,29 @@ export function normalizeString(str: string) {
 export function timeStringToSeconds(timeString: string): number {
 	const [hours, minutes, seconds] = timeString.split(':').map((s) => +s);
 	return hours * 3600 + minutes * 60 + seconds;
+}
+
+export function dateToTimeString(date: Date): string {
+	date.setSeconds(0); // Seconds are alway set to 0 in IDFM metro timings.
+	date.setMinutes(date.getMinutes() + 1); // Avoids inconsistencies and adds a layer of safety to avoid users from being late.
+	const str = date.toLocaleTimeString('en-US', { hour12: false });
+	const hours = date.getHours();
+	if (hours > 0 && hours < 3) {
+		return `${hours + 24}:${str.slice(3)}`;
+	}
+	return str;
+}
+export function timeStringToDate(timeString: string): Date {
+	let [hours, minutes, seconds] = timeString.split(':').map((s) => +s);
+	const date = new Date();
+	if (hours > 24) {
+		date.setDate(date.getDate() + 1);
+		hours -= 24;
+	}
+	date.setHours(hours);
+	date.setMinutes(minutes);
+	date.setSeconds(seconds);
+	return date;
 }
 
 export function distance(from: [number, number], to: [number, number]): number {
@@ -82,3 +105,42 @@ export function getTotalTransfers(itinerary: Itinerary): number {
 	return itinerary.segments.length - 1;
 }
 //#endregion
+
+export function isConnected(network: MetroNetwork): boolean {
+	const nodeIds = Object.keys(network.nodes);
+	if (nodeIds.length === 0) {
+		return true; // An empty graph is considered connected.
+	}
+
+	const visited = new Set<string>();
+	const queue: string[] = [nodeIds[0]]; // Start BFS from the first node.
+	visited.add(nodeIds[0]);
+
+	let head = 0;
+	while (head < queue.length) {
+		const currentNodeId = queue[head++];
+
+		// Check outgoing edges
+		const outgoingEdges = network.edges[currentNodeId] || [];
+		for (const edge of outgoingEdges) {
+			if (!visited.has(edge.toId)) {
+				visited.add(edge.toId);
+				queue.push(edge.toId);
+			}
+		}
+
+		// To handle an undirected graph for connectivity, we also need to check incoming edges
+		// because the graph is represented as a directed adjacency list.
+		// This is slow, but necessary if we can't build a reverse adjacency list.
+		for (const fromId in network.edges) {
+			for (const edge of network.edges[fromId]) {
+				if (edge.toId === currentNodeId && !visited.has(fromId)) {
+					visited.add(fromId);
+					queue.push(fromId);
+				}
+			}
+		}
+	}
+
+	return visited.size === nodeIds.length;
+}

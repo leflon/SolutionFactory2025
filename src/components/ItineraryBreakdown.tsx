@@ -1,12 +1,18 @@
 'use client';
 import MetroLineInfo from '@/components/LineInformation';
 import { t } from '@/lib/i18n';
-import { Itinerary, ItinerarySegment } from '@/lib/types';
+import {
+	Itinerary,
+	ItinerarySegment,
+	ItinerarySegmentWithTimings,
+	ItineraryWithTimings
+} from '@/lib/types';
 import {
 	getSegmentDurationInMinutes,
 	getTotalDuration,
 	getTotalStops,
-	getTotalWalkingDuration
+	getTotalWalkingDuration,
+	timeStringToDate
 } from '@/lib/utils';
 import Image from 'next/image';
 import { Fragment, useState } from 'react';
@@ -19,7 +25,7 @@ import {
 } from 'react-icons/md';
 import { RiLeafFill } from 'react-icons/ri';
 type ItineraryBreakdownPartProps = {
-	segment: ItinerarySegment;
+	segment: ItinerarySegmentWithTimings;
 	onStationClick?: (stationName: string) => void;
 };
 
@@ -30,7 +36,10 @@ declare module 'react' {
 		'--data-index'?: number;
 	}
 }
-const ItineraryBreakdownPart = ({ segment, onStationClick }: ItineraryBreakdownPartProps) => {
+const ItineraryBreakdownPart = ({
+	segment,
+	onStationClick
+}: ItineraryBreakdownPartProps) => {
 	const duration = getSegmentDurationInMinutes(segment);
 	const [isOpen, setIsOpen] = useState(false);
 	return (
@@ -46,6 +55,13 @@ const ItineraryBreakdownPart = ({ segment, onStationClick }: ItineraryBreakdownP
 				<span className='block whitespace-nowrap overflow-ellipsis w-full overflow-hidden'>
 					{segment.stops[0].name}
 				</span>
+			</div>
+			<div className='pt-2 pl-1'>
+				{t('ItineraryBreakdown.timing.from')}
+				{timeStringToDate(segment.departureTime).toLocaleTimeString('fr-FR', {
+					hour: '2-digit',
+					minute: '2-digit'
+				})}
 			</div>
 			<div className='py-2 flex flex-row gap-2 items-center'>
 				<Image
@@ -110,10 +126,13 @@ const ItineraryBreakdownPart = ({ segment, onStationClick }: ItineraryBreakdownP
 };
 
 type ItineraryBreakdownProps = {
-	itinerary: Itinerary;
+	itinerary: ItineraryWithTimings;
 	onStationClick?: (stationId: string) => void;
 };
-const ItineraryBreakdown = ({ itinerary, onStationClick }: ItineraryBreakdownProps) => {
+const ItineraryBreakdown = ({
+	itinerary,
+	onStationClick
+}: ItineraryBreakdownProps) => {
 	return (
 		<div className='relative w-full p-4'>
 			<div className='flex flex-row *:shrink-0 items-center gap-1 mb-2 bg-gray-100 dark:bg-gray-600 dark:text-white p-2 rounded-lg overflow-x-auto'>
@@ -183,7 +202,10 @@ const ItineraryBreakdown = ({ itinerary, onStationClick }: ItineraryBreakdownPro
 							</span>
 						</div>
 					)}
-					<ItineraryBreakdownPart segment={segment} onStationClick={onStationClick} />
+					<ItineraryBreakdownPart
+						segment={segment}
+						onStationClick={onStationClick}
+					/>
 				</div>
 			))}
 		</div>
