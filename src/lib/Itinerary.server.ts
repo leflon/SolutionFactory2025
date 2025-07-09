@@ -51,14 +51,14 @@ export function getMetroNetwork(): MetroNetwork {
 	};
 	const getTimings = db.prepare(
 		`
-		SELECT 
+		SELECT
   st.stop_id AS current_stop_id,
   s.name AS current_stop_name,
   s.latitude AS current_latitude,
   s.longitude AS current_longitude,
   s.parent_station AS current_parent_station,
   st.departure_time AS current_departure_time,
-  
+
   r.route_id AS current_line_id,
   r.name AS current_line_name,
   r.background_color AS current_line_color,
@@ -76,18 +76,18 @@ JOIN Trips t ON st.trip_id = t.trip_id
 JOIN Routes r ON t.route_id = r.route_id
 
 -- Stop suivant (si disponible)
-LEFT JOIN StopTimes stm1 
+LEFT JOIN StopTimes stm1
   ON st.trip_id = stm1.trip_id AND st.stop_sequence = stm1.stop_sequence - 1
 
 -- Alternative si pas de stop suivant
-LEFT JOIN StopTimes stp1 
+LEFT JOIN StopTimes stp1
   ON st.trip_id = stp1.trip_id AND st.stop_sequence = stp1.stop_sequence + 1
      AND stm1.trip_id IS NULL
 
 -- Détails du prochain arrêt
 LEFT JOIN Stops s2 ON s2.stop_id = COALESCE(stm1.stop_id, stp1.stop_id)
 
-WHERE 
+WHERE
   st.departure_time IS NOT NULL AND
   COALESCE(stm1.departure_time, stp1.departure_time) IS NOT NULL
 
@@ -124,7 +124,7 @@ ORDER BY st.trip_id, st.stop_sequence;
 		}
 		const duration = Math.abs(
 			timeStringToSeconds(timing.next_departure_time) -
-			timeStringToSeconds(timing.current_departure_time)
+				timeStringToSeconds(timing.current_departure_time)
 		);
 		edges[timing.current_stop_id].push({
 			fromId: timing.current_stop_id,
@@ -151,10 +151,10 @@ ORDER BY st.trip_id, st.stop_sequence;
 		`
 		)
 		.all() as {
-			from_id: string;
-			to_id: string;
-			time: number;
-		}[];
+		from_id: string;
+		to_id: string;
+		time: number;
+	}[];
 
 	for (const transfer of transfers) {
 		if (!edges[transfer.from_id]) {
@@ -509,6 +509,28 @@ export function getItineraryDijkstra(
 
 	segments = segments.filter((segment) => segment.stops.length > 1);
 	segments[0].connectingDuration = undefined;
+
+	const getPosition = db.prepare(`
+		SELECT tp.* FROM TransferPositions tp
+JOIN Stops s1 ON tp.from_id = s1.stop_id
+JOIN Stops s2 ON tp.to_id = s2.stop_id
+WHERE from_id = ?
+AND (to_id = ? OR s2.route_id = ?);
+
+		`);
+	segments.forEach((segment, i) => {
+		if (i === segments.length - 1) return;
+		const next = segments[i + 1].stops[0].id;
+		const position = getPosition.get(
+			segment.stops[segment.stops.length - 1].id,
+			next,
+			segment.line.id
+		);
+		segment.positionInTrain = (<any>position).position as
+			| 'front'
+			| 'mid'
+			| 'rear';
+	});
 
 	return {
 		segments,

@@ -11,7 +11,8 @@ const AVAILABLE_DATASETS = [
 	'trips',
 	'stop_times',
 	'stops',
-	'transfers'
+	'transfers',
+	'transfer_positions'
 ];
 let importDatasets = [];
 let excludeDatasets = [];
@@ -77,6 +78,11 @@ db.exec(
 db.exec(
 	`CREATE TABLE IF NOT EXISTS Transfers(from_id TEXT, to_id TEXT, time INTEGER)`
 );
+
+db.exec(
+	`CREATE TABLE IF NOT EXISTS TransferPositions(from_id TEXT, to_id TEXT, position TEXT)`
+);
+
 //#endregion
 
 //#region Utility Functions
@@ -271,5 +277,24 @@ if (datasetsToImport.includes('transfers')) {
 		throw e;
 	}
 }
-
+/* Transfer positions */
+if (datasetsToImport.includes('transfer_positions')) {
+	const insert = db.prepare(`INSERT INTO TransferPositions VALUES (?, ?, ?)`);
+	db.exec('BEGIN');
+	try {
+		await saveFileToDatabase('raw/transfer_positions.txt', (parsed) => {
+			const position =
+				parsed[8] === 'Milieu'
+					? 'mid'
+					: parsed[8] === 'Avant'
+						? 'front'
+						: 'rear';
+			insert.run('IDFM:' + parsed[1], 'IDFM:' + parsed[6], position);
+		});
+		db.exec('COMMIT');
+	} catch (e) {
+		db.exec('ROLLBACK');
+		throw e;
+	}
+}
 //#endregion
