@@ -32,6 +32,32 @@ type ItineraryBreakdownPartProps = {
 	incidents?: Incident[];
 };
 
+const IncidentViewer = ({ incident }: { incident: Incident }) => {
+	const [isOpen, setIsOpen] = useState(false);
+
+	return (
+		<div
+			className='px-2 py-1 rounded my-1'
+			style={{
+				backgroundColor: incident.severity.color + '90'
+			}}
+		>
+			<div className='font-bold flex justify-between'>
+				<span>{incident.shortMessage}</span>
+				<MdKeyboardArrowDown
+					size={24}
+					className={'cursor-pointer ' + (isOpen ? 'rotate-180' : '')}
+					onClick={() => setIsOpen(!isOpen)}
+				/>
+			</div>
+			<div
+				hidden={!isOpen}
+				dangerouslySetInnerHTML={{ __html: incident.message }}
+			></div>
+		</div>
+	);
+};
+
 // Allows us to inject CSS variables directly from the component template, to style the small stop indicators border color.
 declare module 'react' {
 	interface CSSProperties {
@@ -95,7 +121,7 @@ const ItineraryBreakdownPart = ({
 			</div>
 			<div>
 				{segment.positionInTrain && (
-					<div className='bg-blue-300 text-white px-2 py-1 rounded my-1 flex items-center gap-2'>
+					<div className='bg-blue-400 text-white px-2 py-1 rounded my-1 flex items-center gap-2'>
 						<span className='flex gap-[2px] items-center'>
 							{Array(3)
 								.fill(null)
@@ -132,15 +158,7 @@ const ItineraryBreakdownPart = ({
 				)}
 				{relevantIncidents &&
 					relevantIncidents.map((incident, i) => (
-						<div
-							key={i}
-							className='bg-gray-200 px-2 py-1 rounded my-1'
-							style={{
-								backgroundColor: incident.severity.color + '90'
-							}}
-						>
-							{incident.shortMessage}
-						</div>
+						<IncidentViewer incident={incident} key={i} />
 					))}
 			</div>
 			<div
