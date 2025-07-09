@@ -31,6 +31,11 @@
 		"stops": {
 			"one": "{{count}} arrêt",
 			"other": "{{count}} arrêts"
+		},
+		"position": {
+			"front": "Monter à l'avant",
+			"mid": "Monter au milieu",
+			"rear": "Monter à l'arrière"
 		}
 	},
 	"TrafficInfo": {

@@ -32,6 +32,11 @@
 		"stops": {
 			"one": "{{count}} stop",
 			"other": "{{count}} stops"
+		},
+		"position": {
+			"front": "Ride at the front",
+			"mid": "Ride at the middle",
+			"rear": "Ride at the rear"
 		}
 	},
 	"TrafficInfo": {

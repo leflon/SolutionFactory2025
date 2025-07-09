@@ -32,6 +32,7 @@ export interface ItinerarySegment {
 	 *  0 if last stop of the itinerary
 	 */
 	connectingDuration?: number;
+	positionInTrain?: 'front' | 'mid' | 'rear';
 }
 
 export interface Itinerary {

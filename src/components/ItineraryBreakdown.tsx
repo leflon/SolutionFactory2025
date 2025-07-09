@@ -32,6 +32,32 @@ type ItineraryBreakdownPartProps = {
 	incidents?: Incident[];
 };
 
+const IncidentViewer = ({ incident }: { incident: Incident }) => {
+	const [isOpen, setIsOpen] = useState(false);
+
+	return (
+		<div
+			className='px-2 py-1 rounded my-1'
+			style={{
+				backgroundColor: incident.severity.color + '90'
+			}}
+		>
+			<div className='font-bold flex justify-between'>
+				<span>{incident.shortMessage}</span>
+				<MdKeyboardArrowDown
+					size={24}
+					className={'cursor-pointer ' + (isOpen ? 'rotate-180' : '')}
+					onClick={() => setIsOpen(!isOpen)}
+				/>
+			</div>
+			<div
+				hidden={!isOpen}
+				dangerouslySetInnerHTML={{ __html: incident.message }}
+			></div>
+		</div>
+	);
+};
+
 // Allows us to inject CSS variables directly from the component template, to style the small stop indicators border color.
 declare module 'react' {
 	interface CSSProperties {
@@ -94,18 +120,45 @@ const ItineraryBreakdownPart = ({
 				/>
 			</div>
 			<div>
-				{segment.line.id}
+				{segment.positionInTrain && (
+					<div className='bg-blue-400 text-white px-2 py-1 rounded my-1 flex items-center gap-2'>
+						<span className='flex gap-[2px] items-center'>
+							{Array(3)
+								.fill(null)
+								.map((_, i) => {
+									const isActive =
+										(i === 2 && segment.positionInTrain === 'front') ||
+										(i === 1 && segment.positionInTrain === 'mid') ||
+										(i === 0 && segment.positionInTrain === 'rear');
+									return (
+										<Image
+											key={i}
+											src={
+												isActive
+													? '/icons/rame-full.png'
+													: '/icons/rame-empty.png'
+											}
+											alt={['front', 'mid', 'rear'][i]}
+											width={24}
+											height={16}
+											className='object-contain'
+										/>
+									);
+								})}
+							<Image
+								src='/icons/rame-front.png'
+								alt=''
+								width={16}
+								height={16}
+								className='w-[16px] h-[12px]'
+							/>
+						</span>
+						{t('ItineraryBreakdown.position.' + segment.positionInTrain)}
+					</div>
+				)}
 				{relevantIncidents &&
 					relevantIncidents.map((incident, i) => (
-						<div
-							key={i}
-							className='bg-gray-200 px-2 py-1 rounded my-1'
-							style={{
-								backgroundColor: incident.severity.color + '90'
-							}}
-						>
-							{incident.shortMessage}
-						</div>
+						<IncidentViewer incident={incident} key={i} />
 					))}
 			</div>
 			<div
