@@ -79,12 +79,18 @@ body {
 }
 
 @supports (height: calc-size(auto, size)) {
+	.h-calc {
+		height: calc-size(auto, size);
+	}
 	.middle-stops-container.open {
 		height: calc-size(auto, size);
 	}
 }
 
 @supports not (height: calc-size(auto, size)) {
+	.h-calc {
+		height: auto;
+	}
 	.middle-stops-container.open {
 		height: auto;
 	}

@@ -56,6 +56,8 @@ export interface ItineraryWithTimings extends Itinerary {
 	segments: ItinerarySegmentWithTimings[];
 }
 
+export type ItineraryTransferPosition = 'front' | 'mid' | 'rear';
+
 /**
  * Represents a node (stop) in the metro network
  */

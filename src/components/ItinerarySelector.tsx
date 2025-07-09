@@ -14,7 +14,7 @@ import {
 import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
 import ItineraryPreview from './ItineraryPreview';
-import ItineraryBreakdown from './ItineraryBreakdown';
+import { ItineraryBreakdown } from './Itinerary';
 import Image from 'next/image';
 
 type ItinerarySelectorProps = {
