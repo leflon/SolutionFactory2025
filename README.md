@@ -42,10 +42,13 @@ Vous pouvez générer votre clé API IDFM [ici](https://prim.iledefrance-mobilit
  4. **Construire la base de données**
 
 Après avoir téléchargés les [Données GTFS](https://efrei365net-my.sharepoint.com/:f:/g/personal/youssef_ait-el-mahjoub_efrei_fr/EizKQSdL9f9Ip53NBEH6KIMBPtdQ4dAKhoLaFE-LzdSwVA?e=rom6aO) et le dataset [Positionnement dans la rame](https://prim.iledefrance-mobilites.fr/fr/jeux-de-donnees/positionnement-dans-la-rame) au fichier CSV (et après avoir remplacé les point-virgules par des virgules dans ce fichier), placer les tous dans le dossier data/raw. Ensuite, lancez la commande suivante :
-    ```bash
-    cd data && node format.js
-    ```
-    **La création de la base de données peut prendre plusieurs minutes**
+
+```bash
+cd data && node format.js
+```
+
+**La création de la base de données peut prendre plusieurs minutes**
+
 5. **Lancer le serveur de développement**
 
 Lancez le serveur de développement avec la commande suivante :
