@@ -1,154 +1,45 @@
-import { Incident } from '@/lib/types';
-import {
-	Dispatch,
-	SetStateAction,
-	useEffect,
-	useMemo,
-	useRef,
-	useState
-} from 'react';
-import Image from 'next/image';
-import { BiSolidTrafficCone } from 'react-icons/bi';
-import { BsExclamation } from 'react-icons/bs';
-import { IoClose } from 'react-icons/io5';
 import { t } from '@/lib/i18n';
+import { Incident } from '@/lib/types';
+import Image from 'next/image';
+import { useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
+import { IncidentIcon, TrafficInfoModalPagination } from '.';
 
-type TrafficInfoPaginationProps = {
-	className?: string;
-	incidents: Incident[];
-	currentIncident: number;
-	setCurrentIncident: Dispatch<SetStateAction<number>>;
-};
-
-const TrafficInfoPagination = ({
-	incidents,
-	currentIncident,
-	setCurrentIncident,
-	className
-}: TrafficInfoPaginationProps) => {
-	const DEFAULT_ANIMATION_DURATION = 10_000;
-	const LONG_ANIMATION_DURATION = 20_000;
-	// Represents the progress of the current page indicator animation.
-	const [animationState, setAnimationState] = useState(0);
-	// Represents the current timeframe of the whole animation helper
-	const globalAnimationTiming = useRef(0);
-	// Represents how long the currently selected page will stay selected before the next one.
-	const animationDuration = useRef(DEFAULT_ANIMATION_DURATION);
-	// Represents the timestamp of the beginning of the current animation.
-	const animationStartTime = useRef<number>(null);
-	const animationFrame = useRef<number>(null);
-
-	const currentIndicatorWidth =
-		(animationState / animationDuration.current) * 100 + '%';
-
-	const manuallySetIncident = (i: number) => {
-		if (i === currentIncident) return;
-		setCurrentIncident(i);
-		// Reset the animation, and make it longer to let the user read more comfortably.
-		setAnimationState(0);
-		animationStartTime.current = globalAnimationTiming.current;
-		animationDuration.current = LONG_ANIMATION_DURATION;
-	};
-
-	const animate = (timing?: DOMHighResTimeStamp) => {
-		// Ignore the first frame
-		if (!timing) return void requestAnimationFrame(animate);
-		globalAnimationTiming.current = timing;
-		// Init the first animation
-		if (!animationStartTime.current) animationStartTime.current = timing;
-		// Time elapsed between the beginning of the current animation and now
-		const progress = timing - animationStartTime.current;
-		// End of the current animation
-
-		if (progress >= animationDuration.current) {
-			// Automatically go to next incident
-			setCurrentIncident((prev) => (prev + 1) % incidents.length);
-			// Reset for next animation
-			animationStartTime.current = timing;
-			setAnimationState(0);
-			// If the previous incident was user-selected, the animation was slower.
-			// We go back to normal speed.
-			if (animationDuration.current !== DEFAULT_ANIMATION_DURATION)
-				animationDuration.current = DEFAULT_ANIMATION_DURATION;
-		} else setAnimationState(progress);
-
-		animationFrame.current = requestAnimationFrame(animate);
-	};
-
-	useEffect(() => {
-		animate();
-		return () => cancelAnimationFrame(animationFrame.current || 0);
-	}, []);
-	return (
-		<div
-			className={
-				'w-full flex gap-1 group justify-center items-center absolute bottom-1 ' +
-				className
-			}
-		>
-			{incidents.map((incident, i) => (
-				<div
-					key={i}
-					className={
-						'relative h-1 md:h-2 bg-gray-200 dark:bg-white rounded-full transition-all duration-500 ' +
-						(i === currentIncident
-							? 'w-8 md:w-16'
-							: 'w-1 md:w-2 cursor-pointer hover:scale-150 group-hover:size-3')
-					}
-					onClick={() => manuallySetIncident(i)}
-				>
-					<div
-						className={
-							'h-full rounded-full transition-colors duration-500 delay-300 ' +
-							(i === currentIncident
-								? 'bg-gray-500 dark:bg-gray-400'
-								: 'w-full bg-gray-300')
-						}
-						style={
-							i === currentIncident ? { width: currentIndicatorWidth } : {}
-						}
-					></div>
-					<Image
-						src={`/metros/${incident.line.name}.png`}
-						alt={incident.line.name}
-						// We load the image a little bigger than its display since it will be subject to scale transformations.
-						width={48}
-						height={48}
-						className={
-							'absolute top-0 left-0 size-full pointer-events-none transition-opacity opacity-0 ' +
-							(i !== currentIncident ? 'group-hover:opacity-100' : '')
-						}
-					/>
-				</div>
-			))}
-		</div>
-	);
-};
-
-type TrafficInfoProps = {
+type TrafficInfoModalProps = {
 	/** All the available incidents to display */
 	incidents: Incident[];
 	/** The last time the data was fetched from IDFM */
 	lastUpdate: Date;
 	/** Filters incidents to display only those associated with this line Id */
 	lineFilter?: string;
-	/** Whether the element can be shrunk by the user, leaving only the line icon displayed. (Default: true) */
+	/**
+	 * Whether the element can be shrunk by the user, leaving only the line icon displayed.
+	 * @default true
+	 */
 	shrinkable?: boolean;
 };
 
-const TrafficInfo = ({
+/**
+ * Modal displaying all real-time live traffic information
+ */
+const TrafficInfoModal = ({
 	incidents,
 	lastUpdate,
 	lineFilter,
-	shrinkable
-}: TrafficInfoProps) => {
+	shrinkable = true
+}: TrafficInfoModalProps) => {
+	/** The incident currently being diaplyed */
 	const [currentIncident, setCurrentIncident] = useState(0);
+	/** Whether the component is shrunk, displaying only a small clickable icon */
 	const [isShrunk, setIsShrunk] = useState(false);
+	/** For swipe actions on mobile, the start X position of a swipe */
 	const touchStartX = useRef<number>(null);
+	/** For swipe actions on mobile, the end X position of a swipe */
 	const touchEndX = useRef<number>(null);
 
+	/** The minimum distance a swipe must be to trigger its effect */
 	const swipeThreshold = 50;
+	/** Fires when a swipe ends. If the threshold is met, navigates through incidents. */
 	const handleSwipe = () => {
 		if (!touchStartX.current || !touchEndX.current) return;
 		const swipedDistance = touchEndX.current - touchStartX.current;
@@ -161,8 +52,7 @@ const TrafficInfo = ({
 		}
 	};
 
-	shrinkable ??= true;
-
+	/** Incidents sorted by order of importance. Current incidents come first, disruptions come before construction works. */
 	const sortedIncidents = useMemo(() => {
 		return incidents
 			.slice()
@@ -221,6 +111,7 @@ const TrafficInfo = ({
 			onKeyDown={(e) =>
 				isShrunk && (e.key === 'Enter' || e.key === ' ') && setIsShrunk(false)
 			}
+			// Makes the element tab focusable when shrunk to open through by tab-navigation
 			tabIndex={isShrunk ? 0 : -1}
 		>
 			<button
@@ -254,24 +145,11 @@ const TrafficInfo = ({
 					className={isShrunk ? 'size-2 md:size-9' : 'size-9 md:size-12'}
 					alt={sortedIncidents[currentIncident].line.name}
 				/>
-				<div
-					className='absolute top-[-6px] right-[-6px] size-5 rounded flex items-center justify-center'
-					style={{
-						backgroundColor:
-							sortedIncidents[currentIncident].status === 'active'
-								? sortedIncidents[currentIncident].severity.color
-								: '#BBBBBB'
-					}}
-				>
-					{sortedIncidents[currentIncident].cause === 'maintenance' && (
-						<BiSolidTrafficCone color='white' />
-					)}
-					{sortedIncidents[currentIncident].cause === 'disruption' &&
-						sortedIncidents[currentIncident].severity.effect ===
-							'NO_SERVICE' && <IoClose color='white' />}
-					{sortedIncidents[currentIncident].cause === 'disruption' &&
-						sortedIncidents[currentIncident].severity.effect ===
-							'SIGNIFICANT_DELAYS' && <BsExclamation color='white' />}
+				<div className='absolute top-[-6px] right-[-6px]'>
+					<IncidentIcon
+						incident={sortedIncidents[currentIncident]}
+						color='white'
+					/>
 				</div>
 			</div>
 			<div
@@ -291,7 +169,7 @@ const TrafficInfo = ({
 					}}
 				></div>
 			</div>
-			<TrafficInfoPagination
+			<TrafficInfoModalPagination
 				className={isShrunk ? 'opacity-0' : ''}
 				incidents={sortedIncidents}
 				currentIncident={currentIncident}
@@ -301,4 +179,4 @@ const TrafficInfo = ({
 	);
 };
 
-export default TrafficInfo;
+export default TrafficInfoModal;

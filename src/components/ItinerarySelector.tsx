@@ -13,7 +13,7 @@ import {
 } from 'react-icons/md';
 import StopSearchInput from './StopSearchInput';
 import { t } from '@/lib/i18n';
-import ItineraryPreview from './ItineraryPreview';
+import ItineraryPreview from './Itinerary/ItineraryPreview';
 import { ItineraryBreakdown } from './Itinerary';
 import Image from 'next/image';
 
@@ -114,8 +114,8 @@ const ItinerarySelector = ({
 			</div>
 			<div
 				className={
-					`relative z-30 mx-auto md:w-80 w-5/6 max-h-[50dvh] md:max-h-9/12 md:fixed md:top-20 md:left-5 bg-white flex flex-col items-center gap-2
-		border border-gray-300 dark:border-gray-600 dark:bg-gray-800 *:dark:text-white
+					`relative z-30 mx-auto md:w-80 w-5/6 max-h-[50dvh] md:max-h-9/12 md:fixed md:top-20 md:left-5 bg-background flex flex-col items-center gap-2
+		border border-gray-300 dark:border-gray-600 *:dark:text-white
 		rounded-t-lg md:rounded-lg overflow-y-auto overflow-x-hidden py-4 shadow-md dark:shadow-lg ` +
 					(isShrunk ? ' max-md:!h-0 max-md:!p-0 max-md:overflow-hidden' : '')
 				}

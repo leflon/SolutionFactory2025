@@ -7,9 +7,21 @@ import { t } from '@/lib/i18n';
 import React from 'react';
 
 type ItineraryPreviewProps = {
+	/**
+	 * The itinerary to preview
+	 */
 	itinerary: Itinerary;
+	/**
+	 * Whether this itinerary should be showing a 'best carbon' label
+	 */
 	isBestCarbon?: boolean;
+	/**
+	 *Callback fired when the component is clicked.
+	 */
 	onClick?: () => void;
+	/**
+	 * Whether this itinerary is being selected
+	 */
 	isSelected: boolean;
 };
 

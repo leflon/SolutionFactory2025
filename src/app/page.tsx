@@ -1,9 +1,9 @@
 'use client';
 
+import Chatbot from '@/components/Chatbot';
 import ItinerarySelector from '@/components/ItinerarySelector';
 import Navbar from '@/components/Navbar';
-import TrafficInfo from '@/components/TrafficInfo';
-import Chatbot from '@/components/Chatbot';
+import { TrafficInfoModal } from '@/components/Traffic';
 import {
 	Incident,
 	ItineraryEndpoints,
@@ -124,7 +124,7 @@ export default function Home() {
 				{trafficInfo && (
 					<div className='z-50 fixed bottom-5 w-3/4 left-1/2 -translate-x-1/2'>
 						<div className='w-3/4 mx-auto'>
-							<TrafficInfo
+							<TrafficInfoModal
 								incidents={trafficInfo.incidents}
 								lastUpdate={trafficInfo.lastUpdate}
 							/>
@@ -140,7 +140,7 @@ export default function Home() {
 				/>
 				{trafficInfo && (
 					<div className='z-50 w-5/6 mx-auto mb-2'>
-						<TrafficInfo
+						<TrafficInfoModal
 							incidents={trafficInfo.incidents}
 							lastUpdate={trafficInfo.lastUpdate}
 						/>
