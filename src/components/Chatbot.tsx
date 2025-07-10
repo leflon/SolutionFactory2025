@@ -164,10 +164,10 @@ export default function Chatbot({
 	}
 
 	return (
-		<div className='md:fixed md:bottom-10 md:right-10 w-5/6 mx-auto mb-2 md:w-full z-50 flex flex-col items-start md:items-end'>
+		<>
 			{!open && (
 				<button
-					className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-black dark:text-white rounded-full p-2 md:p-4 shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white'
+					className='z-50 cursor-pointer md:fixed bottom-2 right-2 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-black dark:text-white rounded-full p-2 md:p-4 shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white'
 					onClick={() => setOpen(true)}
 					aria-label='Open chat'
 				>
@@ -175,7 +175,7 @@ export default function Chatbot({
 				</button>
 			)}
 			{open && (
-				<div className='fixed w-full h-full top-0 left-0 z-50 md:relative md:w-80 md:max-w-[90vw] md:h-[32rem] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-fast'>
+				<div className='fixed w-full h-full max-md:top-0 max-md:left-0 z-50 md:right-5 md:bottom-5 md:w-80 md:max-w-[90vw] md:h-[32rem] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-fast'>
 					{/* Header */}
 					<div className='flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700 px-5 py-3'>
 						<span className='font-semibold text-black dark:text-white text-base'>
@@ -285,6 +285,6 @@ export default function Chatbot({
 					animation: fade-in-fast 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 				}
 			`}</style>
-		</div>
+		</>
 	);
 }

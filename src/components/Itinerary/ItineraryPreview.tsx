@@ -37,7 +37,7 @@ const ItineraryPreview = ({
 				'relative text-left dark:text-white cursor-pointer rounded bg-gray-200 dark:bg-gray-700 overflow-hidden transition-transform active:scale-95' +
 				(isBestCarbon ? ' border-3 border-green-400' : '') +
 				(isSelected
-					? ' border-3 !border-blue-500 dark:!border-pink-500'
+					? ' border-3 border-secondary'
 					: ' border-3 border-gray-200')
 			}
 			onClick={onClick}

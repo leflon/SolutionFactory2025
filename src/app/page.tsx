@@ -122,24 +122,24 @@ export default function Home() {
 					loadingItinerary={loadingItinerary}
 				/>
 				{trafficInfo && (
-					<div className='z-50 fixed bottom-5 w-3/4 left-1/2 -translate-x-1/2'>
-						<div className='w-3/4 mx-auto'>
-							<TrafficInfoModal
-								incidents={trafficInfo.incidents}
-								lastUpdate={trafficInfo.lastUpdate}
-							/>
-						</div>
+					<div className='z-30 fixed bottom-5 w-1/2 left-1/2 -translate-x-1/2'>
+						<TrafficInfoModal
+							incidents={trafficInfo.incidents}
+							lastUpdate={trafficInfo.lastUpdate}
+						/>
 					</div>
 				)}
 			</div>
 			<div className='z-50 fixed w-full bottom-0 md:hidden'>
 				<Navbar />
-				<Chatbot
-					setEndpoints={setEndpoints}
-					loadingItinerary={loadingItinerary}
-				/>
+				<div className='w-5/6 mx-auto my-1'>
+					<Chatbot
+						setEndpoints={setEndpoints}
+						loadingItinerary={loadingItinerary}
+					/>
+				</div>
 				{trafficInfo && (
-					<div className='z-50 w-5/6 mx-auto mb-2'>
+					<div className='z-30 w-5/6 mx-auto mb-2'>
 						<TrafficInfoModal
 							incidents={trafficInfo.incidents}
 							lastUpdate={trafficInfo.lastUpdate}

@@ -93,8 +93,8 @@ const TrafficInfoModal = ({
 	return (
 		<div
 			className={
-				`z-40 box-border relative bg-white dark:bg-gray-800 dark:text-white rounded-2xl border-[1px] border-gray-300 dark:border-gray-600 text-left
-			flex items-center gap-3 overflow-hidden group ` +
+				`z-30 box-border relative bg-background text-foreground rounded-2xl
+				border-[1px] border-border text-left flex items-center gap-3 overflow-hidden group ` +
 				(isShrunk
 					? 'cursor-pointer rounded-full size-10 md:size-18 justify-center self-end hover:scale-110 transition-transform'
 					: 'h-22 pl-3 w-full')

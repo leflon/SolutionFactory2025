@@ -245,11 +245,10 @@ const ItinerarySelector = ({
 
 				<button
 					onClick={onRequest}
-					className='cursor-pointer w-32 px-3 py-1 mt-2 border-2
-				border-green-600  dark:border-pink-400
-				font-medium rounded-md transition-all duration-300 ease-in-out
-				hover:scale-105 bg-green-600 text-white dark:bg-pink-400
-				hover:dark:text-white flex items-center justify-center'
+					className='cursor-pointer bg-primary text-foreground w-32 px-3 py-1 mt-2
+										font-medium rounded-md transition-all duration-300 ease-in-out
+										hover:scale-105
+										flex items-center justify-center'
 				>
 					{!isLoading ? (
 						<span>{t('ItinerarySelector.go')}</span>

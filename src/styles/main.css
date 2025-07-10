@@ -20,13 +20,15 @@
 	:root {
 		--text: 164 100% 3%;
 		--background: 168 100% 98%;
+		--border: 218 5% 86%;
 		--primary: 164 59% 55%;
 		--secondary: 207 95% 74%;
 		--accent: 226 95% 60%;
 	}
 	.dark {
 		--text: 164 100% 97%;
-		--background: 168 100% 2%;
+		--background: 216 27% 20%;
+		--border: 216 27% 40%;
 		--primary: 164 59% 45%;
 		--secondary: 207 95% 26%;
 		--accent: 226 95% 40%;
@@ -35,8 +37,9 @@
 
 @theme {
 	--font-main: 'Parisine', sans-serif;
-	--color-text: hsl(var(--text));
+	--color-foreground: hsl(var(--text));
 	--color-background: hsl(var(--background));
+	--color-border: hsl(var(--border));
 	--color-primary: hsl(var(--primary));
 	--color-secondary: hsl(var(--secondary));
 	--color-accent: hsl(var(--accent));
