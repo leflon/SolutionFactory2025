@@ -234,8 +234,7 @@ if (datasetsToImport.includes('stops')) {
 	db.exec('BEGIN');
 	try {
 		await saveFileToDatabase('raw/stops.txt', (parsed) => {
-			if (!metroStopIds.has(parsed[0]))
-				return void console.log(`Skipping non-metro stop ${parsed[0]}`); // Skip non-metro stops
+			if (!metroStopIds.has(parsed[0])) return; // Skip non-metro stops
 			const { route_id } = getRouteId.get(parsed[0]);
 			insert.run(
 				parsed[0],
