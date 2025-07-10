@@ -17,13 +17,6 @@ const AVAILABLE_DATASETS = [
 let importDatasets = [];
 let excludeDatasets = [];
 
-//Test for SQL query for fetching stops
-const query = db.prepare(
-	`SELECT stop_id, name, latitude, longitude FROM Stops`
-);
-const rows = query.all();
-console.log(rows);
-
 const importArgIndex = process.argv.indexOf('--import');
 const excludeArgIndex = process.argv.indexOf('--exclude');
 
@@ -70,7 +63,7 @@ db.exec(
 	`CREATE TABLE IF NOT EXISTS Trips(route_id TEXT, service_id TEXT, trip_id TEXT PRIMARY KEY, direction TEXT, wheelchair_accessible INTEGER, bikes_allowed INTEGER)`
 );
 db.exec(
-	`CREATE TABLE IF NOT EXISTS StopTimes(trip_id TEXT, departure_time TEXT, stop_id TEXT, stop_sequence INTEGER, PRIMARY KEY (trip_id, stop_id, stop_sequence))`
+	`CREATE TABLE IF NOT EXISTS StopTimes(trip_id TEXT, departure_time TEXT, stop_id TEXT, stop_sequence INTEGER)`
 );
 db.exec(
 	`CREATE TABLE IF NOT EXISTS Stops(stop_id TEXT PRIMARY KEY, route_id TEXT, name TEXT, plain_name TEXT, longitude REAL, latitude REAL, zone_id INTEGER, parent_station TEXT, wheelchair_accessible INTEGER)`

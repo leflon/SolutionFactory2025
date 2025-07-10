@@ -16,9 +16,30 @@
 	font-style: normal;
 	font-display: swap;
 }
+@layer base {
+	:root {
+		--text: 164 100% 3%;
+		--background: 168 100% 98%;
+		--primary: 164 59% 55%;
+		--secondary: 207 95% 74%;
+		--accent: 226 95% 60%;
+	}
+	.dark {
+		--text: 164 100% 97%;
+		--background: 168 100% 2%;
+		--primary: 164 59% 45%;
+		--secondary: 207 95% 26%;
+		--accent: 226 95% 40%;
+	}
+}
 
 @theme {
 	--font-main: 'Parisine', sans-serif;
+	--color-text: hsl(var(--text));
+	--color-background: hsl(var(--background));
+	--color-primary: hsl(var(--primary));
+	--color-secondary: hsl(var(--secondary));
+	--color-accent: hsl(var(--accent));
 }
 
 body {
@@ -79,12 +100,18 @@ body {
 }
 
 @supports (height: calc-size(auto, size)) {
+	.h-calc {
+		height: calc-size(auto, size);
+	}
 	.middle-stops-container.open {
 		height: calc-size(auto, size);
 	}
 }
 
 @supports not (height: calc-size(auto, size)) {
+	.h-calc {
+		height: auto;
+	}
 	.middle-stops-container.open {
 		height: auto;
 	}

@@ -12,7 +12,6 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
-		"3": "^2.1.0",
 		"@datastructures-js/priority-queue": "^6.3.3",
 		"@google/genai": "^1.7.0",
 		"@heroicons/react": "^2.2.0",
@@ -21,15 +20,12 @@
 		"better-sqlite3": "^12.0.0",
 		"csv-parse": "^5.6.0",
 		"framer-motion": "^12.22.0",
-		"heap": "^0.2.7",
 		"leaflet": "^1.9.4",
 		"next": "^15.3.4",
 		"postcss": "^8.5.6",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"react-leaflet": "^5.0.0",
-		"sqlite": "^5.1.1",
-		"sqlite3": "^5.1.7",
 		"tailwindcss": "^4.1.10",
 		"tinyqueue": "^3.0.0",
 		"ts-node": "^10.9.2"

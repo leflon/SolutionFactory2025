@@ -13,7 +13,6 @@ import {
 	dateToTimeString,
 	distance,
 	getTotalDistance,
-	getTotalDuration,
 	isConnected,
 	timeStringToDate,
 	timeStringToSeconds
@@ -516,7 +515,6 @@ JOIN Stops s1 ON tp.from_id = s1.stop_id
 JOIN Stops s2 ON tp.to_id = s2.stop_id
 WHERE from_id = ?
 AND (to_id = ? OR s2.route_id = ?);
-
 		`);
 	segments.forEach((segment, i) => {
 		if (i === segments.length - 1) return;
