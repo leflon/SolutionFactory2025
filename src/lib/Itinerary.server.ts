@@ -526,7 +526,7 @@ AND (to_id = ? OR s2.route_id = ?);
 			next,
 			segment.line.id
 		);
-		segment.positionInTrain = (<any>position).position as
+		segment.positionInTrain = (<any>position)?.position as
 			| 'front'
 			| 'mid'
 			| 'rear';
