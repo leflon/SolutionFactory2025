@@ -30,7 +30,7 @@ export const metadata = {
 		siteName: 'Roule Ma Poule',
 		images: [
 			{
-				url: 'https://rmp.leflon.frog-image.jpg', // Make sure this image is at least 1200x630 pixels
+				url: 'https://rmp.leflon.fr/og-image.jpg',
 				width: 1200,
 				height: 630,
 				alt: 'Roule Ma Poule'
